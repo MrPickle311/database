@@ -30,69 +30,17 @@ namespace db
         boost::asio::streambuf buffer_;
 
     public:
-        DefaultReadWithResponseConnection(boost::asio::io_service &io_service) : socket_(io_service), buffer_()
-        {
-        }
+        DefaultReadWithResponseConnection(boost::asio::io_service &io_service);
 
-        ~DefaultReadWithResponseConnection()
-        {
-            std::cout << "Destroyed tcp_connection\n";
-        }
+        ~DefaultReadWithResponseConnection();
 
-        void perform_connection() override
-        {
+        void perform_connection() override;
 
-            boost::asio::async_read_until(socket_, buffer_, boost::asio::string_view{"|"},
-                                          boost::bind(&ReadWithResponseConnection::handle_read_finished,
-                                                      shared_from_this(),
-                                                      boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-        }
-
-        boost::asio::ip::tcp::socket &get_socket() override
-        {
-            return socket_;
-        }
+        boost::asio::ip::tcp::socket &get_socket() override;
 
     protected:
-        void handle_read_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override
-        {
-            if (!ec)
-            {
-                std::istream is(&this->buffer_);
-                std::string line;
-                std::getline(is, line);
-                std::cout << "Odebrano: " << line << std::endl;
-
-
-                std::cout << "zapis\n";
-
-                const std::string response = "abc123";
-                std::vector<char> data(response.length());
-                std::copy(response.begin(), response.end(), data.begin());
-
-                boost::asio::async_write(socket_, boost::asio::buffer(data),
-                                         boost::bind(&ReadWithResponseConnection::handle_write_finished,
-                                                     shared_from_this(),
-                                                     boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-            }
-            else
-            {
-                std::cerr << "Błąd odebrania danych: " << ec.message() << std::endl;
-            }
-        }
-        void handle_write_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override
-        {
-            if (!ec)
-            {
-                std::cout << "Wysłano dane: " << std::endl;
-            }
-            else
-            {
-                std::cerr << "Błąd wysyłania danych: " << ec.message() << std::endl;
-            }
-
-            this->socket_.close();
-        }
+        void handle_read_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override;
+        void handle_write_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override;
     };
 
     class TcpServer
