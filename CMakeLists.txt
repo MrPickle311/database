@@ -4,7 +4,8 @@ project(database)
 find_package(Boost REQUIRED COMPONENTS system)
 
 add_subdirectory(src/server)
+add_subdirectory(src/utils)
 
 add_executable(database src/main.cpp)
 
-target_link_libraries(database Boost::system server)
+target_link_libraries(database Boost::system server utils)

@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(server)
+project(utils)
 
-add_library(server STATIC
-  server.hpp
-  server.cpp
+add_library(utils STATIC
+  utils.hpp
+  utils.cpp
 )
 
-set_target_properties(server PROPERTIES CXX_STANDARD 17)
+set_target_properties(utils PROPERTIES CXX_STANDARD 17)
 
 target_include_directories(
-  server
+  utils
   PUBLIC .
 )
 
-target_link_libraries(server Boost::system)
+target_link_libraries(utils Boost::system)
