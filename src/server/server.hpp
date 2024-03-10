@@ -5,9 +5,13 @@
 #include <memory>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
+#include <parser.hpp>
+#include <execution_ioc.hpp>
 
 namespace db
 {
+    using DefaultExecutionIoC = ExecutionIoC<DefaultParser>;
+
     class Connection
     {
     public:
@@ -18,19 +22,20 @@ namespace db
     class ReadWithResponseConnection : public Connection
     {
     public:
-        // virtual void read()
         virtual void handle_read_finished(const boost::system::error_code ec, std::size_t bytes_transferred) = 0;
         virtual void handle_write_finished(const boost::system::error_code ec, std::size_t bytes_transferred) = 0;
     };
+
 
     class DefaultReadWithResponseConnection : public ReadWithResponseConnection, public boost::enable_shared_from_this<DefaultReadWithResponseConnection>
     {
     private:
         boost::asio::ip::tcp::socket socket_;
         boost::asio::streambuf buffer_;
+        boost::shared_ptr<DefaultExecutionIoC> execution_ioc_;
 
     public:
-        DefaultReadWithResponseConnection(boost::asio::io_service &io_service);
+        DefaultReadWithResponseConnection(boost::asio::io_service &io_service, boost::shared_ptr<DefaultExecutionIoC> execution_ioc);
 
         ~DefaultReadWithResponseConnection();
 
@@ -38,7 +43,6 @@ namespace db
 
         boost::asio::ip::tcp::socket &get_socket() override;
 
-    protected:
         void handle_read_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override;
         void handle_write_finished(const boost::system::error_code ec, std::size_t bytes_transferred) override;
     };
@@ -56,7 +60,7 @@ namespace db
     class DefaultTcpServer : public TcpServer
     {
     public:
-        DefaultTcpServer(const short port);
+        DefaultTcpServer(const short port, boost::shared_ptr<DefaultExecutionIoC> execution_ioc);
 
         void run();
 
@@ -68,5 +72,6 @@ namespace db
         boost::asio::io_service io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::streambuf buffer_;
+        boost::shared_ptr<DefaultExecutionIoC> execution_ioc_;
     };
 }

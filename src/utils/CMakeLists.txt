@@ -7,7 +7,7 @@ add_library(utils STATIC
   utils.cpp
 )
 
-set_target_properties(utils PROPERTIES CXX_STANDARD 17)
+set_target_properties(utils PROPERTIES CXX_STANDARD 20)
 
 target_include_directories(
   utils

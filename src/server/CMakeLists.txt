@@ -7,11 +7,12 @@ add_library(server STATIC
   server.cpp
 )
 
-set_target_properties(server PROPERTIES CXX_STANDARD 17)
+set_target_properties(server PROPERTIES CXX_STANDARD 20)
 
 target_include_directories(
   server
   PUBLIC .
+  ../execution
 )
 
 target_link_libraries(server Boost::system)

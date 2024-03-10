@@ -3,11 +3,15 @@ cmake_minimum_required(VERSION 3.14)
 project(execution)
 
 add_library(execution STATIC
-  server.hpp
-  server.cpp
+  command.hpp
+  command.cpp
+  executor.hpp
+  # executor.cpp
+  parser.hpp
+  parser.cpp
 )
 
-set_target_properties(execution PROPERTIES CXX_STANDARD 17)
+set_target_properties(execution PROPERTIES CXX_STANDARD 20)
 
 target_include_directories(
   execution

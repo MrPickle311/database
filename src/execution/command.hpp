@@ -16,6 +16,7 @@ namespace db
         std::string str_;
 
     public:
+        StringCommand(const std::string& str);
         std::string execute();
     };
 

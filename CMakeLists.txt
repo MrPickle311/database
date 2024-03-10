@@ -5,7 +5,10 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 add_subdirectory(src/server)
 add_subdirectory(src/utils)
+add_subdirectory(src/execution)
 
 add_executable(database src/main.cpp)
 
-target_link_libraries(database Boost::system server utils)
+set_target_properties(database PROPERTIES CXX_STANDARD 20)
+
+target_link_libraries(database Boost::system server utils execution)
