@@ -6,6 +6,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 add_subdirectory(src/server)
 add_subdirectory(src/utils)
 add_subdirectory(src/execution)
+add_subdirectory(src/persistence)
 
 add_executable(database src/main.cpp)
 
