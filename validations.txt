@@ -1,0 +1,5 @@
+STR ABC TRIM 1 2, pierwszy argument < drugi argument
+łap boost::lexical_cast_exeption
+sprawdzaj, czy dany string istnieje
+sprawdzaj na początku, czy komenda konczy się |
+sprawdzaj czy dana komend otrzymuje odpowiednią liczbę argumentów
