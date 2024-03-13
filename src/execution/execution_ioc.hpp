@@ -13,13 +13,11 @@ namespace db
     class ExecutionIoC
     {
     private:
-        boost::shared_ptr<PType> parser;
+        PType parser;
 
     public:
-        ExecutionIoC(){
-            this->parser = boost::make_shared<PType>();
-        }
-        boost::shared_ptr<PType> getParser() { return parser; }
+        ExecutionIoC(PType parser) : parser(parser) {}
+        PType& getParser() { return parser; }
     };
 
 

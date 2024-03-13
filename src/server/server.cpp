@@ -3,6 +3,8 @@
 #include <boost/make_shared.hpp>
 #include <vector>
 #include <command.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/find.hpp>
 
 namespace db
 {
@@ -37,16 +39,18 @@ namespace db
     {
         if (!ec)
         {
-            std::cout << "Handling read finished\n";
             std::istream is(&this->buffer_);
             std::string received_data(std::istreambuf_iterator<char>(is), {});
+            std::string trimmed_data = boost::trim_right_copy_if(received_data, [](char c) { return c != '|'; });
+            trimmed_data = trimmed_data.substr(0, trimmed_data.size() - 1);
 
-            std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser()->extract_commands(received_data);
-            std::cout << "Parsed " << commands.size() << " commands\n";
-            const std::string response = "abc";
+            std::cout << "Received data[" << trimmed_data << "]" <<  std::endl;
+
+            std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser().extract_commands(trimmed_data);
+            std::string response;
             for (auto &&command : commands)
             {
-                // response = executor->execute(command);
+                response = command->execute();
             }
 
             std::vector<char> data(response.length());

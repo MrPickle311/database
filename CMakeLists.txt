@@ -12,4 +12,4 @@ add_executable(database src/main.cpp)
 
 set_target_properties(database PROPERTIES CXX_STANDARD 20)
 
-target_link_libraries(database Boost::system server utils execution)
+target_link_libraries(database Boost::system server utils execution persistence)

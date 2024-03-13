@@ -10,7 +10,7 @@ namespace db
     }
     std::string StringRepository::get(const std::string &name)
     {
-        return std::string();
+        return "just a string";
     }
     bool StringRepository::exists(const std::string &substr)
     {

@@ -12,6 +12,7 @@ namespace db
     class StringRepository : public Repository
     {
     public:
+        virtual ~StringRepository(){};
         void create(const std::string &name) override;
         std::string get(const std::string &name);
         bool exists(const std::string &substr);
@@ -23,5 +24,10 @@ namespace db
         void trim(const std::string &name, const unsigned int start, const unsigned int end);
         void ltrim(const std::string &name, const unsigned int count);
         void rtrim(const std::string &name, const unsigned int count);
+
+        static StringRepository& get_instance(){
+            static StringRepository instance;
+            return instance;
+        }
     };
 }
