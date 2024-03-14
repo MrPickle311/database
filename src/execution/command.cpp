@@ -279,7 +279,29 @@ namespace db
         ss << "]";
         return ss.str();
     }
-    
+
+    // OTHER
+
+    std::string KeysCommand::execute()
+    {
+        std::stringstream ss;
+        auto pattern = pattern_.value_or("");
+        auto result = GlobalRepository::get_instance().keys(pattern);
+        ss << "[ ";
+        for (const auto &element : result)
+        {
+            ss << element << " ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+
+    std::string DelCommand::execute()
+    {
+        GlobalRepository::get_instance().del(key_name_);
+        return "OK";
+    }
+
     // STRING FACTORIES
 
     boost::shared_ptr<Command> CreateStringCommandFactory::create_command(const std::vector<std::string> &input)
@@ -503,13 +525,12 @@ namespace db
 
     boost::shared_ptr<Command> DeleteCommandFactory::create_command(const std::vector<std::string> &input)
     {
-        return boost::shared_ptr<Command>();
+        return boost::make_shared<DelCommand>(input[0]);
     }
 
     boost::shared_ptr<Command> KeysCommandFactory::create_command(const std::vector<std::string> &input)
     {
-        return boost::shared_ptr<Command>();
+        return boost::make_shared<KeysCommand>(input.size() > 0 ? std::optional<std::string>{input[0]} : std::optional<std::string>{});
     }
-
 
 }

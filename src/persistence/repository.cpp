@@ -187,4 +187,13 @@ namespace db
         return std::vector<std::string>{"1", "2", "3", "4"};
     }
 
+    std::vector<std::string> GlobalRepository::keys(std::string &pattern)
+    {
+        return std::vector<std::string>{"1", "2", "3", "4", "5"};
+    }
+
+    void GlobalRepository::del(std::string &key)
+    {
+        std::cout << "Deleting key: " << key << std::endl;
+    }
 }

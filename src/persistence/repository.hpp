@@ -93,4 +93,18 @@ namespace db
         }
     };
 
+    class GlobalRepository
+    {
+    public:
+        virtual ~GlobalRepository() {}
+        std::vector<std::string> keys(std::string &pattern);
+        void del(std::string &key);
+
+        static GlobalRepository &get_instance()
+        {
+            static GlobalRepository instance;
+            return instance;
+        }
+    };
+
 };

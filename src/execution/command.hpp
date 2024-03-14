@@ -353,6 +353,25 @@ namespace db
         std::string execute() override;
     };
 
+    // OTHER
+
+    class KeysCommand : public Command
+    {
+    public:
+        std::optional<std::string> pattern_;
+
+    public:
+        KeysCommand(const std::optional<std::string> pattern) : pattern_(pattern) {}
+        std::string execute() override;
+    };
+
+    class DelCommand : public KeyedCommand
+    {
+    public:
+        DelCommand(const std::string &key) : KeyedCommand(key) {}
+        std::string execute() override;
+    };
+
     //////FACTORY
 
     class CommandFactory
@@ -648,7 +667,8 @@ namespace db
     {
     public:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-        private:
+
+    private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
             {"DEL", boost::make_shared<HashDelCommandFactory>()},
             {"EXISTS", boost::make_shared<HashExistsCommandFactory>()},
