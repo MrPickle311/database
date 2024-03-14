@@ -3,9 +3,19 @@
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/algorithm/string.hpp>
+#include <iostream>
 
 namespace db
 {
+    std::vector<std::string> cleanup(std::vector<std::string> vec, std::string element)
+    {
+        vec.erase(std::remove_if(vec.begin(), vec.end(), [&element](const std::string &str)
+                                 { return str == element || str.empty(); }),
+                  vec.end());
+        return vec;
+    }
+
     DefaultParser::DefaultParser(Validator &validator,
                                  Tokenizer &main_tokenizer,
                                  Tokenizer &sub_tokenizer,
@@ -38,6 +48,7 @@ namespace db
     {
         std::vector<std::string> tokens;
         boost::split(tokens, input, boost::is_any_of(this->delimeter));
+        // TODO: trzeba sprawidzic, czy big token nie sklada sie tylko z spacji
         return tokens;
     }
 
@@ -45,6 +56,7 @@ namespace db
     {
         std::vector<std::string> tokens;
         boost::split(tokens, input, boost::is_any_of(this->delimeter));
+        tokens = cleanup(tokens, " ");
         return tokens;
     }
 

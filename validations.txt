@@ -6,3 +6,4 @@ dany string,mapa,kolejka,set nie istnieje
 sprawdzaj czy dana komenda istnieje
 sprawdzaj, dany hash zawiera dany klucz
 sprawdzaj czy dana komenda ma odpowiedni format, czy jest przedzielona ; oraz czy subkomendy są napisami przedzielonymi białymi znakami
+przy intersekcach, uniach i diffach nazwy setów nie mogą sie powtarzac

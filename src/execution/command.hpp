@@ -27,11 +27,11 @@ namespace db
 
     class CreateStringCommand : public KeyedCommand
     {
-        private:
+    private:
         std::string value_;
+
     public:
-        CreateStringCommand(const std::string &string_name, const std::string& value) : 
-        KeyedCommand{string_name}, value_{value} {}
+        CreateStringCommand(const std::string &string_name, const std::string &value) : KeyedCommand{string_name}, value_{value} {}
         std::string execute();
     };
 
@@ -191,10 +191,11 @@ namespace db
     class SetDifferenceCommand : public Command
     {
     private:
-        std::vector<std::string> set_names_;
+        std::string set_name_1_;
+        std::string set_name_2_;
 
     public:
-        SetDifferenceCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        SetDifferenceCommand(const std::string &set_name_1, const std::string &set_name_2) : set_name_1_(set_name_1), set_name_2_(set_name_2) {}
         std::string execute() override;
     };
 
@@ -225,34 +226,14 @@ namespace db
         std::string execute() override;
     };
 
-    class SetMoveCommand : public KeyedCommand
-    {
-    private:
-        std::string value_;
-        std::string dest_set_name_;
-
-    public:
-        SetMoveCommand(const std::string &set_name, const std::string &value, const std::string &dest_set_name) : KeyedCommand(set_name), value_(value), dest_set_name_(dest_set_name) {}
-        std::string execute() override;
-    };
-
-    class SetGetCommand : public KeyedCommand
-    {
-    private:
-        std::optional<std::string> value_;
-
-    public:
-        SetGetCommand(const std::string &set_name, const std::optional<std::string> value) : KeyedCommand(set_name), value_(value) {}
-        std::string execute() override;
-    };
 
     class SetPopCommand : public KeyedCommand
     {
     private:
-        std::optional<std::string> value_;
+        std::string value_;
 
     public:
-        SetPopCommand(const std::string &set_name, const std::optional<std::string> value) : KeyedCommand(set_name), value_(value) {}
+        SetPopCommand(const std::string &set_name, const std::string value) : KeyedCommand(set_name), value_(value) {}
         std::string execute() override;
     };
 
@@ -547,18 +528,6 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
     };
 
-    class SetMoveCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-    };
-
-    class SetGetCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-    };
-
     class SetPopCommandFactory : public CommandFactory
     {
     public:
@@ -579,8 +548,6 @@ namespace db
             {"UNION", boost::make_shared<SetUnionCommandFactory>()},
             {"CONTAINS", boost::make_shared<SetContainsCommandFactory>()},
             {"GETALL", boost::make_shared<SetGetAllCommandFactory>()},
-            {"MOVE", boost::make_shared<SetMoveCommandFactory>()},
-            {"GET", boost::make_shared<SetGetCommandFactory>()},
             {"POP", boost::make_shared<SetPopCommandFactory>()}};
     };
 

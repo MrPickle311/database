@@ -1,5 +1,6 @@
 #include "repository.hpp"
 #include <iostream>
+#include <set>
 
 namespace db
 {
@@ -9,7 +10,7 @@ namespace db
     {
         // Use an accessor to safely insert the string into the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        data.insert(a, name);
+        data_.insert(a, name);
         // Initialize the value to an empty string
         a->second = value;
     }
@@ -18,7 +19,7 @@ namespace db
     {
         // Use an accessor to safely retrieve the string from the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             return a->second;
         }
@@ -32,14 +33,14 @@ namespace db
     bool StringRepository::exists(const std::string &name)
     {
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        return data.find(a, name);
+        return data_.find(a, name);
     }
 
     unsigned int StringRepository::length(const std::string &name)
     {
         // Use an accessor to safely retrieve the string and get its length
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             return a->second.length();
         }
@@ -54,7 +55,7 @@ namespace db
     {
         // Use an accessor to safely retrieve the string and perform the substring operation
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             return a->second.substr(start, end - start);
         }
@@ -69,7 +70,7 @@ namespace db
     {
         // Use an accessor to safely modify the string within the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             a->second.append(postfix);
         }
@@ -84,7 +85,7 @@ namespace db
     {
         // Use an accessor to safely modify the string within the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             a->second = prefix + a->second;
         }
@@ -99,7 +100,7 @@ namespace db
     {
         // Use an accessor to safely modify the string within the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             // Check if index is within bounds
             if (index <= a->second.length())
@@ -122,7 +123,7 @@ namespace db
     {
         // Pobierz element mapy
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             // Sprawdź poprawność zakresu
             if (start <= end && end <= a->second.length())
@@ -154,7 +155,7 @@ namespace db
     {
         // Use an accessor to safely modify the string within the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             // Check if count is within bounds
             if (count <= a->second.length())
@@ -177,7 +178,7 @@ namespace db
     {
         // Use an accessor to safely modify the string within the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
-        if (data.find(a, name))
+        if (data_.find(a, name))
         {
             // Check if count is within bounds
             if (count <= a->second.length())
@@ -197,61 +198,189 @@ namespace db
     }
 
     // SETS
+
+    // Create a new set with the given name (empty initially)
     void SetRepository::create(const std::string &name)
     {
-        std::cout << "Creating set: " << name << std::endl;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        data_.insert(a, name);
+        a->second = tbb::concurrent_set<std::string>{};
     }
 
+    // Add a value to the set identified by the name
     void SetRepository::add(const std::string &name, const std::string &value)
     {
         std::cout << "Adding value: " << value << " to set: " << name << std::endl;
+        // Use an accessor to safely access and modify the set
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            a->second.insert(value);
+        }
+        else
+        {
+            // Handle the case where the set doesn'  t exist (e.g., create it or throw an exception)
+        }
     }
 
+    // Get the number of elements in the set identified by the name
     unsigned int SetRepository::len(const std::string &name)
     {
-        return 2138;
+        // Use an accessor to safely access the set
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            return a->second.size();
+        }
+        else
+        {
+            // Handle the case where the set doesn't exist (e.g., return 0 or throw an exception)
+            return 0;
+        }
     }
 
+    // Find the intersection of elements in all sets identified by the names vector
     std::vector<std::string> SetRepository::intersection(const std::vector<std::string> &names)
     {
-        return std::vector<std::string>{"2", "3", "4"};
+        if (names.empty())
+        {
+            return {}; // Empty intersection for empty list
+        }
+
+        // Use accessors for thread-safe access to sets
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        data_.find(a, names[0]);
+
+        std::set<std::string> intersection;
+        for (auto &&e : a->second)
+        {
+            intersection.insert(e);
+        }
+
+        for (size_t i = 1; i < names.size(); ++i)
+        {
+            tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor b;
+            if (data_.find(b, names[i]))
+            {
+                std::set<std::string> result;
+                // Use std::set_intersection for efficient intersection
+                std::set_intersection(intersection.begin(), intersection.end(),
+                                      b->second.begin(), b->second.end(),
+                                      std::inserter(result, result.end()));
+                intersection = result;
+            }
+            else
+            {
+                // Handle the case where a set doesn't exist (e.g., return empty or throw an exception)
+                return {}; // Return empty in this case for clarity
+            }
+        }
+
+        // Convert the intersection set to a vector
+        return std::vector<std::string>(intersection.begin(), intersection.end());
     }
 
-    std::vector<std::string> SetRepository::difference(const std::vector<std::string> &names)
+    std::vector<std::string> SetRepository::difference(const std::string &name_1, const std::string &name_2)
     {
-        return std::vector<std::string>{"2", "1"};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a, b;
+        if (!data_.find(a, name_1) || !data_.find(b, name_2))
+        {
+            // Handle cases where one or both sets don't exist (e.g., return empty or throw an exception)
+            std::cout << "One or both sets not found" << std::endl;
+            return {}; // Return empty in this case for clarity
+        }
+
+        // Calculate the difference directly using std::set_difference
+        std::set<std::string> difference;
+        std::set_difference(a->second.begin(), a->second.end(),
+                            b->second.begin(), b->second.end(),
+                            std::inserter(difference, difference.end()));
+
+        // Convert the difference set to a vector
+        return std::vector<std::string>(difference.begin(), difference.end());
     }
 
     std::vector<std::string> SetRepository::union_(const std::vector<std::string> &names)
     {
-        return std::vector<std::string>{"5", "6"};
+        // Use a set to accumulate unique elements from all sets
+        std::set<std::string> union_set;
+
+        // Iterate through each set name
+        for (const std::string &name : names)
+        {
+            tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+            if (data_.find(a, name))
+            {
+                // Insert elements from the current set into the union set
+                union_set.insert(a->second.begin(), a->second.end());
+            }
+            else
+            {
+                // Handle the case where a set doesn't exist (e.g., log or throw an exception)
+                std::cout << "Set " << name << " not found" << std::endl;
+            }
+        }
+
+        // Convert the union set to a vector
+        return std::vector<std::string>(union_set.begin(), union_set.end());
     }
 
     bool SetRepository::contains(const std::string &name, const std::string &value)
     {
-        return true;
+        // Use accessor for thread-safe access
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Check if value exists in the set
+            return a->second.count(value) > 0;
+        }
+        else
+        {
+            // Handle case where set doesn't exist
+            return false; // Assuming a value cannot be in a non-existent set
+        }
     }
 
     std::vector<std::string> SetRepository::get_all(const std::string &name)
     {
-        return std::vector<std::string>{"1", "2", "3", "4", "5", "6"};
+        // Use accessor for thread-safe access
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Copy elements from the set to a vector
+            return std::vector<std::string>(a->second.begin(), a->second.end());
+        }
+        else
+        {
+            // Handle case where set doesn't exist
+            return {}; // Possibly throw an exception or provide a default value
+        }
     }
 
-    void SetRepository::move(const std::string &name1, const std::string &value, const std::string &name2)
+    std::string SetRepository::pop(const std::string &name, const std::string &value)
     {
-        std::cout << "Moving value: " << value << " from set: " << name1 << std::endl;
-    }
-
-    std::string SetRepository::get(const std::string &name, const std::string &optionalValue)
-    {
-        std::cout << "Getting value: " << optionalValue << " from set: " << name << std::endl;
-        return "76";
-    }
-
-    std::string SetRepository::pop(const std::string &name, const std::string &optionalValue)
-    {
-        std::cout << "Popping value: " << optionalValue << " from set: " << name << std::endl;
-        return "99";
+        // Use accessor for thread-safe access
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Check if the value exists in the set
+            if (a->second.count(value) > 0)
+            {
+                // Remove the value from the set
+                a->second.unsafe_erase(value);
+                return value; // Return the removed value
+            }
+            else
+            {
+                // Value not found, handle the case (e.g., return empty string, throw exception)
+                return ""; // Replace with your desired behavior (e.g., throw std::runtime_error)
+            }
+        }
+        else
+        {
+            // Set doesn't exist, handle the case
+            return ""; // Replace with your desired behavior
+        }
     }
 
     // QUEUES

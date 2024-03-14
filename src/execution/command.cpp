@@ -120,7 +120,7 @@ namespace db
 
     std::string SetDifferenceCommand::execute()
     {
-        auto result = SetRepository::get_instance().difference(set_names_);
+        auto result = SetRepository::get_instance().difference(set_name_1_, set_name_2_);
         std::stringstream ss;
         ss << "[ ";
         for (const auto &element : result)
@@ -164,20 +164,9 @@ namespace db
         return ss.str();
     }
 
-    std::string SetMoveCommand::execute()
-    {
-        SetRepository::get_instance().move(key_name_, value_, dest_set_name_);
-        return "OK";
-    }
-
-    std::string SetGetCommand::execute()
-    {
-        return SetRepository::get_instance().get(key_name_, value_.value_or(""));
-    }
-
     std::string SetPopCommand::execute()
     {
-        return SetRepository::get_instance().pop(key_name_, value_.value_or(""));
+        return SetRepository::get_instance().pop(key_name_, value_);
     }
 
     // QUEUES
@@ -395,7 +384,7 @@ namespace db
 
     boost::shared_ptr<Command> SetDifferenceCommandFactory::create_command(const std::vector<std::string> &input)
     {
-        return boost::make_shared<SetDifferenceCommand>(input);
+        return boost::make_shared<SetDifferenceCommand>(input[0], input[1]);
     }
 
     boost::shared_ptr<Command> SetUnionCommandFactory::create_command(const std::vector<std::string> &input)
@@ -413,19 +402,9 @@ namespace db
         return boost::make_shared<SetGetAllCommand>(input[0]);
     }
 
-    boost::shared_ptr<Command> SetMoveCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::make_shared<SetMoveCommand>(input[0], input[1], input[2]);
-    }
-
-    boost::shared_ptr<Command> SetGetCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::make_shared<SetGetCommand>(input[0], input.size() > 1 ? std::optional<std::string>{input[1]} : std::optional<std::string>{});
-    }
-
     boost::shared_ptr<Command> SetPopCommandFactory::create_command(const std::vector<std::string> &input)
     {
-        return boost::make_shared<SetPopCommand>(input[0], input.size() > 1 ? std::optional<std::string>{input[1]} : std::optional<std::string>{});
+        return boost::make_shared<SetPopCommand>(input[0], input[1]);
     }
 
     boost::shared_ptr<Command> SetCommandFactory::create_command(const std::vector<std::string> &input)
