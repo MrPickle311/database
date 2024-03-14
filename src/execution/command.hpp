@@ -43,12 +43,13 @@ namespace db
     {
     public:
         std::string execute();
+        CreateHashCommand(const std::string &hash_name) : KeyedCommand{hash_name} {}
     };
 
     class CreateQueueCommand : public KeyedCommand
     {
     public:
-        CreateQueueCommand(const std::string &queue_name) : KeyedCommand{queue_name}{}
+        CreateQueueCommand(const std::string &queue_name) : KeyedCommand{queue_name} {}
         std::string execute();
     };
 
@@ -279,6 +280,78 @@ namespace db
     };
 
     // HASHES
+
+    class HashDelCommand : public KeyedCommand
+    {
+    private:
+        std::string hash_key_;
+
+    public:
+        HashDelCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        std::string execute() override;
+    };
+
+    class HashExistsCommand : public KeyedCommand
+    {
+    private:
+        std::string hash_key_;
+
+    public:
+        HashExistsCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        std::string execute() override;
+    };
+
+    class HashGetCommand : public KeyedCommand
+    {
+    private:
+        std::string hash_key_;
+
+    public:
+        HashGetCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        std::string execute() override;
+    };
+
+    class HashGetAllCommand : public KeyedCommand
+    {
+    public:
+        HashGetAllCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        std::string execute() override;
+    };
+
+    class HashKeysCommand : public KeyedCommand
+    {
+    public:
+        HashKeysCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        std::string execute() override;
+    };
+
+    class HashSetCommand : public KeyedCommand
+    {
+    private:
+        std::string hash_key_;
+        std::string hash_value_;
+
+    public:
+        HashSetCommand(const std::string &hash_name, const std::string &hash_key, const std::string &hash_value) : KeyedCommand(hash_name), hash_key_(hash_key), hash_value_(hash_value) {}
+        std::string execute() override;
+    };
+
+    class HashLenCommand : public KeyedCommand
+    {
+    public:
+        HashLenCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        std::string execute() override;
+    };
+
+    class HashSearchCommand : public KeyedCommand
+    {
+    private:
+        std::string query_;
+
+    public:
+        HashSearchCommand(const std::string &hash_name, const std::string &query) : KeyedCommand(hash_name), query_(query) {}
+        std::string execute() override;
+    };
 
     //////FACTORY
 
@@ -523,6 +596,70 @@ namespace db
 
     // HASHES
 
+    class HashDelCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashExistsCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashGetCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashGetAllCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashGetKeysCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashSetCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashLenCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashSearchCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class HashCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+        private:
+        std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
+            {"DEL", boost::make_shared<HashDelCommandFactory>()},
+            {"EXISTS", boost::make_shared<HashExistsCommandFactory>()},
+            {"GET", boost::make_shared<HashGetCommandFactory>()},
+            {"GETALL", boost::make_shared<HashGetAllCommandFactory>()},
+            {"GETKEYS", boost::make_shared<HashGetKeysCommandFactory>()},
+            {"SET", boost::make_shared<HashSetCommandFactory>()},
+            {"LEN", boost::make_shared<HashLenCommandFactory>()},
+            {"SEARCH", boost::make_shared<HashSearchCommandFactory>()}};
+    };
+
     // OTHER
 
     class DeleteCommandFactory : public CommandFactory
@@ -532,12 +669,6 @@ namespace db
     };
 
     class KeysCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-    };
-
-    class HashCommandFactory : public CommandFactory
     {
     public:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);

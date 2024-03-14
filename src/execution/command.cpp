@@ -212,6 +212,74 @@ namespace db
         return "OK";
     }
 
+    std::string HashDelCommand::execute()
+    {
+        HashRepository::get_instance().del(key_name_, hash_key_);
+        return "OK";
+    }
+
+    std::string HashExistsCommand::execute()
+    {
+        std::stringstream ss;
+        ss << std::boolalpha << HashRepository::get_instance().exists(key_name_, hash_key_);
+        return ss.str();
+    }
+
+    std::string HashGetCommand::execute()
+    {
+        return HashRepository::get_instance().get(key_name_, hash_key_);
+    }
+
+    std::string HashGetAllCommand::execute()
+    {
+        auto result = HashRepository::get_instance().get_all(key_name_);
+        std::stringstream ss;
+        ss << "[ ";
+        for (const auto &element : result)
+        {
+            ss << "{" << element.first << " : " << element.second << "} ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+
+    std::string HashKeysCommand::execute()
+    {
+        auto result = HashRepository::get_instance().get_keys(key_name_);
+        std::stringstream ss;
+        ss << "[ ";
+        for (const auto &element : result)
+        {
+            ss << element << " ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+
+    std::string HashSetCommand::execute()
+    {
+        HashRepository::get_instance().set(key_name_, hash_key_, hash_value_);
+        return "OK";
+    }
+
+    std::string HashLenCommand::execute()
+    {
+        return std::to_string(HashRepository::get_instance().len(key_name_));
+    }
+
+    std::string HashSearchCommand::execute()
+    {
+        auto result = HashRepository::get_instance().search(key_name_, query_);
+        std::stringstream ss;
+        ss << "[ ";
+        for (const auto &element : result)
+        {
+            ss << element << " ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+    
     // STRING FACTORIES
 
     boost::shared_ptr<Command> CreateStringCommandFactory::create_command(const std::vector<std::string> &input)
@@ -378,6 +446,61 @@ namespace db
 
     // HASHES FACTORIES
 
+    boost::shared_ptr<Command> CreateHashCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<CreateHashCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> HashCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        std::vector<std::string> new_command(input);
+        auto it = new_command.begin() + 1;
+        new_command.erase(it);
+        return children_factories_[input[1]]->create_command(new_command);
+    }
+
+    boost::shared_ptr<Command> HashDelCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashDelCommand>(input[0], input[1]);
+    }
+
+    boost::shared_ptr<Command> HashExistsCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashExistsCommand>(input[0], input[1]);
+    }
+
+    boost::shared_ptr<Command> HashGetCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashGetCommand>(input[0], input[1]);
+    }
+
+    boost::shared_ptr<Command> HashGetAllCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashGetAllCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> HashGetKeysCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashKeysCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> HashSetCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashSetCommand>(input[0], input[1], input[2]);
+    }
+
+    boost::shared_ptr<Command> HashLenCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashLenCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> HashSearchCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<HashSearchCommand>(input[0], input[1]);
+    }
+
+    // OTHER
+
     boost::shared_ptr<Command> DeleteCommandFactory::create_command(const std::vector<std::string> &input)
     {
         return boost::shared_ptr<Command>();
@@ -388,14 +511,5 @@ namespace db
         return boost::shared_ptr<Command>();
     }
 
-    boost::shared_ptr<Command> HashCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::shared_ptr<Command>();
-    }
-
-    boost::shared_ptr<Command> CreateHashCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::shared_ptr<Command>();
-    }
 
 }

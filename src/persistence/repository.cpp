@@ -174,6 +174,7 @@ namespace db
 
     void HashRepository::set(const std::string &name, const std::string &key, const std::string &value)
     {
+        std::cout <<"Setting " << name << " to " << key << std::endl;
     }
 
     uint HashRepository::len(const std::string &name)
