@@ -180,6 +180,38 @@ namespace db
         return SetRepository::get_instance().pop(key_name_, value_.value_or(""));
     }
 
+    // QUEUES
+
+    std::string CreateQueueCommand::execute()
+    {
+        QueueRepository::get_instance().create(key_name_);
+        return "OK";
+    }
+
+    std::string QueuePushCommand::execute()
+    {
+        QueueRepository::get_instance().push(key_name_, value_);
+        return "OK";
+    }
+
+    std::string QueuePopCommand::execute()
+    {
+        return QueueRepository::get_instance().pop(key_name_);
+    }
+
+    std::string QueuePollCommand::execute()
+    {
+        return QueueRepository::get_instance().poll(key_name_);
+    }
+
+    // HASHES
+
+    std::string CreateHashCommand::execute()
+    {
+        HashRepository::get_instance().create(key_name_);
+        return "OK";
+    }
+
     // STRING FACTORIES
 
     boost::shared_ptr<Command> CreateStringCommandFactory::create_command(const std::vector<std::string> &input)
@@ -249,7 +281,7 @@ namespace db
         return children_factories_[input[1]]->create_command(new_command);
     }
 
-    // SETS
+    // SETS FACTORIES
 
     boost::shared_ptr<Command> CreateSetCommandFactory::create_command(const std::vector<std::string> &input)
     {
@@ -314,6 +346,38 @@ namespace db
         return children_factories_[input[1]]->create_command(new_command);
     }
 
+    // QUEUES FACTORIES
+
+    boost::shared_ptr<Command> CreateQueueCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<CreateQueueCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> QueueCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        std::vector<std::string> new_command(input);
+        auto it = new_command.begin() + 1;
+        new_command.erase(it);
+        return children_factories_[input[1]]->create_command(new_command);
+    }
+
+    boost::shared_ptr<Command> QueuePushCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<QueuePushCommand>(input[0], input[1]);
+    }
+
+    boost::shared_ptr<Command> QueuePopCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<QueuePopCommand>(input[0]);
+    }
+
+    boost::shared_ptr<Command> QueuePollCommandFactory::create_command(const std::vector<std::string> &input)
+    {
+        return boost::make_shared<QueuePollCommand>(input[0]);
+    }
+
+    // HASHES FACTORIES
+
     boost::shared_ptr<Command> DeleteCommandFactory::create_command(const std::vector<std::string> &input)
     {
         return boost::shared_ptr<Command>();
@@ -329,29 +393,9 @@ namespace db
         return boost::shared_ptr<Command>();
     }
 
-    boost::shared_ptr<Command> QueueCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::shared_ptr<Command>();
-    }
-
     boost::shared_ptr<Command> CreateHashCommandFactory::create_command(const std::vector<std::string> &input)
     {
         return boost::shared_ptr<Command>();
-    }
-
-    boost::shared_ptr<Command> CreateQueueCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::shared_ptr<Command>();
-    }
-
-    std::string CreateHashCommand::execute()
-    {
-        return std::string();
-    }
-
-    std::string CreateQueueCommand::execute()
-    {
-        return std::string();
     }
 
 }

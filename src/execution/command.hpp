@@ -48,6 +48,7 @@ namespace db
     class CreateQueueCommand : public KeyedCommand
     {
     public:
+        CreateQueueCommand(const std::string &queue_name) : KeyedCommand{queue_name}{}
         std::string execute();
     };
 
@@ -250,6 +251,34 @@ namespace db
         SetPopCommand(const std::string &set_name, const std::optional<std::string> value) : KeyedCommand(set_name), value_(value) {}
         std::string execute() override;
     };
+
+    // QUEUE
+
+    class QueuePushCommand : public KeyedCommand
+    {
+    private:
+        std::string value_;
+
+    public:
+        QueuePushCommand(const std::string &queue_name, const std::string &value) : KeyedCommand(queue_name), value_(value) {}
+        std::string execute() override;
+    };
+
+    class QueuePopCommand : public KeyedCommand
+    {
+    public:
+        QueuePopCommand(const std::string &queue_name) : KeyedCommand(queue_name) {}
+        std::string execute() override;
+    };
+
+    class QueuePollCommand : public KeyedCommand
+    {
+    public:
+        QueuePollCommand(const std::string &queue_name) : KeyedCommand(queue_name) {}
+        std::string execute() override;
+    };
+
+    // HASHES
 
     //////FACTORY
 
@@ -460,6 +489,40 @@ namespace db
             {"POP", boost::make_shared<SetPopCommandFactory>()}};
     };
 
+    // QUEUES
+
+    class QueuePushCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class QueuePopCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class QueuePollCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+    };
+
+    class QueueCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    private:
+        std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
+            {"PUSH", boost::make_shared<QueuePushCommandFactory>()},
+            {"POP", boost::make_shared<QueuePopCommandFactory>()},
+            {"POLL", boost::make_shared<QueuePollCommandFactory>()}};
+    };
+
+    // HASHES
+
     // OTHER
 
     class DeleteCommandFactory : public CommandFactory
@@ -475,12 +538,6 @@ namespace db
     };
 
     class HashCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-    };
-
-    class QueueCommandFactory : public CommandFactory
     {
     public:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);

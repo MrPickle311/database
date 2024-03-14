@@ -49,9 +49,48 @@ namespace db
         std::string get(const std::string &name, const std::string &optionalValue = "");
         std::string pop(const std::string &name, const std::string &optionalValue = "");
 
-        static SetRepository &get_instance(){
+        static SetRepository &get_instance()
+        {
             static SetRepository instance;
             return instance;
         }
     };
-}
+
+    class QueueRepository : public Repository
+    {
+    public:
+        virtual ~QueueRepository() {}
+        void create(const std::string &name) override;
+        void push(const std::string &name, const std::string &value);
+        std::string pop(const std::string &name);
+        std::string poll(const std::string &name);
+
+        static QueueRepository &get_instance()
+        {
+            static QueueRepository instance;
+            return instance;
+        }
+    };
+
+    class HashRepository : public Repository
+    {
+    public:
+        virtual ~HashRepository() {}
+        void create(const std::string &name) override;
+        void del(const std::string &name, const std::string &key);
+        bool exists(const std::string &name, const std::string &key);
+        std::string get(const std::string &name, const std::string &key);
+        std::vector<std::pair<std::string, std::string>> get_all(const std::string &name);
+        std::vector<std::string> get_keys(const std::string &name);
+        void set(const std::string &name, const std::string &key, const std::string &value);
+        uint len(const std::string &name);
+        std::vector<std::string> search(const std::string &name, const std::string &query);
+
+        static HashRepository &get_instance()
+        {
+            static HashRepository instance;
+            return instance;
+        }
+    };
+
+};

@@ -117,4 +117,73 @@ namespace db
         std::cout << "Popping value: " << optionalValue << " from set: " << name << std::endl;
         return "99";
     }
+
+    // QUEUES
+
+    void QueueRepository::create(const std::string &name)
+    {
+        std::cout << "Creating queue: " << name << std::endl;
+    }
+
+    void QueueRepository::push(const std::string &name, const std::string &value)
+    {
+        std::cout << "Pushing value: " << value << " to queue: " << name << std::endl;
+    }
+
+    std::string QueueRepository::pop(const std::string &name)
+    {
+        return std::string{"23"};
+    }
+
+    std::string QueueRepository::poll(const std::string &name)
+    {
+        return std::string{"67"};
+    }
+
+    // HASHES
+
+    void HashRepository::create(const std::string &name)
+    {
+        std::cout << "Creating hash: " << name << std::endl;
+    }
+
+    void HashRepository::del(const std::string &name, const std::string &key)
+    {
+        std::cout << "Deleting key: " << key << " from hash: " << name << std::endl;
+    }
+
+    bool HashRepository::exists(const std::string &name, const std::string &key)
+    {
+        return true;
+    }
+
+    std::string HashRepository::get(const std::string &name, const std::string &key)
+    {
+        return std::string{"123"};
+    }
+
+    std::vector<std::pair<std::string, std::string>> HashRepository::get_all(const std::string &name)
+    {
+        return std::vector<std::pair<std::string, std::string>>{{"1", "2"}, {"3", "4"}};
+    }
+
+    std::vector<std::string> HashRepository::get_keys(const std::string &name)
+    {
+        return std::vector<std::string>{"1", "2", "3", "4"};
+    }
+
+    void HashRepository::set(const std::string &name, const std::string &key, const std::string &value)
+    {
+    }
+
+    uint HashRepository::len(const std::string &name)
+    {
+        return 333;
+    }
+
+    std::vector<std::string> HashRepository::search(const std::string &name, const std::string &query)
+    {
+        return std::vector<std::string>{"1", "2", "3", "4"};
+    }
+
 }
