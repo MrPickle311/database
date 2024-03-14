@@ -12,7 +12,7 @@ namespace db
 
     std::string CreateStringCommand::execute()
     {
-        StringRepository::get_instance().create(key_name_);
+        StringRepository::get_instance().create(key_name_, value_);
         return "OK";
     }
 
@@ -306,7 +306,7 @@ namespace db
 
     boost::shared_ptr<Command> CreateStringCommandFactory::create_command(const std::vector<std::string> &input)
     {
-        return boost::make_shared<CreateStringCommand>(input[0]);
+        return boost::make_shared<CreateStringCommand>(input[0], input[1]);
     }
 
     boost::shared_ptr<Command> StringGetCommandFactory::create_command(const std::vector<std::string> &input)

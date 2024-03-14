@@ -1,22 +1,21 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <tbb/concurrent_hash_map.h>
 
 namespace db
 {
-    class Repository
-    {
-    public:
-        virtual void create(const std::string &name) = 0;
-    };
 
-    class StringRepository : public Repository
+    class StringRepository
     {
+    private:
+        tbb::concurrent_hash_map<std::string, std::string> data;
+
     public:
         virtual ~StringRepository(){};
-        void create(const std::string &name) override;
+        void create(const std::string &name, const std::string &value);
         std::string get(const std::string &name);
-        bool exists(const std::string &substr);
+        bool exists(const std::string &name);
         unsigned int length(const std::string &name);
         std::string substring(const std::string &name, const unsigned int start, const unsigned int end);
         void append(const std::string &name, const std::string &postifx);
@@ -33,7 +32,7 @@ namespace db
         }
     };
 
-    class SetRepository : public Repository
+    class SetRepository
     {
     public:
         ~SetRepository(){};
@@ -56,11 +55,11 @@ namespace db
         }
     };
 
-    class QueueRepository : public Repository
+    class QueueRepository
     {
     public:
         virtual ~QueueRepository() {}
-        void create(const std::string &name) override;
+        void create(const std::string &name);
         void push(const std::string &name, const std::string &value);
         std::string pop(const std::string &name);
         std::string poll(const std::string &name);
@@ -72,11 +71,11 @@ namespace db
         }
     };
 
-    class HashRepository : public Repository
+    class HashRepository
     {
     public:
         virtual ~HashRepository() {}
-        void create(const std::string &name) override;
+        void create(const std::string &name);
         void del(const std::string &name, const std::string &key);
         bool exists(const std::string &name, const std::string &key);
         std::string get(const std::string &name, const std::string &key);

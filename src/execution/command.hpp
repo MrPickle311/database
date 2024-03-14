@@ -27,8 +27,11 @@ namespace db
 
     class CreateStringCommand : public KeyedCommand
     {
+        private:
+        std::string value_;
     public:
-        CreateStringCommand(const std::string &string_name) : KeyedCommand{string_name} {}
+        CreateStringCommand(const std::string &string_name, const std::string& value) : 
+        KeyedCommand{string_name}, value_{value} {}
         std::string execute();
     };
 

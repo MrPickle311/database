@@ -2,6 +2,7 @@
 #include <server.hpp>
 #include <boost/make_shared.hpp>
 #include <parser.hpp>
+#include <tbb/concurrent_hash_map.h>
 
 int main(int argc, char *argv[])
 {

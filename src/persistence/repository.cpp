@@ -5,59 +5,195 @@ namespace db
 {
 
     // STRING
-    void StringRepository::create(const std::string &name)
+    void StringRepository::create(const std::string &name, const std::string &value)
     {
-        std::cout << "Creating string: " << name << std::endl;
+        // Use an accessor to safely insert the string into the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        data.insert(a, name);
+        // Initialize the value to an empty string
+        a->second = value;
     }
 
     std::string StringRepository::get(const std::string &name)
     {
-        return "just a string";
+        // Use an accessor to safely retrieve the string from the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            return a->second;
+        }
+        else
+        {
+            // Handle the case where the string is not found (e.g., throw an exception or return a default value)
+            return ""; // Example: return an empty string if not found
+        }
     }
 
-    bool StringRepository::exists(const std::string &substr)
+    bool StringRepository::exists(const std::string &name)
     {
-        return false;
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        return data.find(a, name);
     }
 
     unsigned int StringRepository::length(const std::string &name)
     {
-        return 2137;
+        // Use an accessor to safely retrieve the string and get its length
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            return a->second.length();
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            return 0; // Example: return 0 if not found
+        }
     }
 
     std::string StringRepository::substring(const std::string &name, const unsigned int start, const unsigned int end)
     {
-        return "substring";
+        // Use an accessor to safely retrieve the string and perform the substring operation
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            return a->second.substr(start, end - start);
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            return ""; // Example: return an empty string if not found
+        }
     }
 
-    void StringRepository::append(const std::string &name, const std::string &postifx)
+    void StringRepository::append(const std::string &name, const std::string &postfix)
     {
-        std::cout << "Appending string: " << postifx << std::endl;
+        // Use an accessor to safely modify the string within the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            a->second.append(postfix);
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            // (e.g., create the string with the given suffix or throw an exception)
+        }
     }
 
-    void StringRepository::prepend(const std::string &name, const std::string &preifx)
+    void StringRepository::prepend(const std::string &name, const std::string &prefix)
     {
-        std::cout << "Prepending string: " << preifx << std::endl;
+        // Use an accessor to safely modify the string within the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            a->second = prefix + a->second;
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            // (e.g., create the string with the given prefix or throw an exception)
+        }
     }
 
     void StringRepository::insert(const std::string &name, const std::string &value, unsigned int index)
     {
-        std::cout << "Inserting string: " << value << " at index: " << index << std::endl;
+        // Use an accessor to safely modify the string within the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            // Check if index is within bounds
+            if (index <= a->second.length())
+            {
+                a->second.insert(index, value);
+            }
+            else
+            {
+                // Handle the case where index is out of bounds (e.g., throw an exception)
+            }
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            // (e.g., create the string with the inserted value or throw an exception)
+        }
     }
 
     void StringRepository::trim(const std::string &name, const unsigned int start, const unsigned int end)
     {
-        std::cout << "Trimming string" << std::endl;
+        // Pobierz element mapy
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            // Sprawdź poprawność zakresu
+            if (start <= end && end <= a->second.length())
+            {
+                // Utwórz kopię oryginalnego stringa
+                std::string original = a->second;
+
+                // Usuń fragment stringa
+                a->second.erase(start, end - start);
+
+                // Wyślij zdarzenie o usunięciu fragmentu
+                // (opcjonalne, w zależności od potrzeb)
+                // onTrimmed(name, start, end, original.substr(start, end - start));
+            }
+            else
+            {
+                // Obsłuż błąd niepoprawnego zakresu
+                // (np. wyrzuć wyjątek)
+            }
+        }
+        else
+        {
+            // Obsłuż błąd braku elementu
+            // (np. wyrzuć wyjątek)
+        }
     }
 
     void StringRepository::ltrim(const std::string &name, const unsigned int count)
     {
-        std::cout << "Left trimming string" << std::endl;
+        // Use an accessor to safely modify the string within the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            // Check if count is within bounds
+            if (count <= a->second.length())
+            {
+                a->second.erase(0, count);
+            }
+            else
+            {
+                // Handle the case where count exceeds string length (e.g., reset string to empty or throw an exception)
+            }
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            // (e.g., create the string with the trimmed content or throw an exception)
+        }
     }
 
     void StringRepository::rtrim(const std::string &name, const unsigned int count)
     {
-        std::cout << "Right trimming string" << std::endl;
+        // Use an accessor to safely modify the string within the map
+        tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+        if (data.find(a, name))
+        {
+            // Check if count is within bounds
+            if (count <= a->second.length())
+            {
+                a->second.erase(a->second.length() - count);
+            }
+            else
+            {
+                // Handle the case where count exceeds string length (e.g., reset string to empty or throw an exception)
+            }
+        }
+        else
+        {
+            // Handle the case where the string is not found
+            // (e.g., create the string with the trimmed content or throw an exception)
+        }
     }
 
     // SETS
@@ -174,7 +310,7 @@ namespace db
 
     void HashRepository::set(const std::string &name, const std::string &key, const std::string &value)
     {
-        std::cout <<"Setting " << name << " to " << key << std::endl;
+        std::cout << "Setting " << name << " to " << key << std::endl;
     }
 
     uint HashRepository::len(const std::string &name)

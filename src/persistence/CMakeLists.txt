@@ -14,4 +14,4 @@ target_include_directories(
   PUBLIC .
 )
 
-target_link_libraries(persistence Boost::system)
+target_link_libraries(persistence Boost::system TBB::tbb)
