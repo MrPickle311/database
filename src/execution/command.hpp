@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <map>
 #include <boost/make_shared.hpp>
+#include <optional>
 
 namespace db
 {
@@ -13,78 +14,67 @@ namespace db
         virtual std::string execute() = 0;
     };
 
+    class KeyedCommand : public Command
+    {
+    protected:
+        std::string key_name_;
+
+    public:
+        KeyedCommand(const std::string &str_name) : key_name_(str_name) {}
+    };
+
     // CREATE
 
-    class CreateStringCommand : public Command
+    class CreateStringCommand : public KeyedCommand
     {
-    private:
-        std::string string_name_;
-
     public:
-        CreateStringCommand(const std::string &string_name) : string_name_{string_name} {}
+        CreateStringCommand(const std::string &string_name) : KeyedCommand{string_name} {}
         std::string execute();
     };
 
-    class CreateSetCommand : public Command
+    class CreateSetCommand : public KeyedCommand
     {
-    private:
-        std::string set_name_;
-
     public:
         std::string execute();
+        CreateSetCommand(const std::string &set_name) : KeyedCommand{set_name} {}
     };
 
-    class CreateHashCommand : public Command
+    class CreateHashCommand : public KeyedCommand
     {
-    private:
-        std::string hash_name_;
-
     public:
         std::string execute();
     };
 
-    class CreateQueueCommand : public Command
+    class CreateQueueCommand : public KeyedCommand
     {
-    private:
-        std::string queue_name_;
-
     public:
         std::string execute();
     };
 
     // STRING
 
-    class StringCommand : public Command
-    {
-    protected:
-        std::string str_name_;
-
-    public:
-        StringCommand(const std::string &str_name) : str_name_(str_name) {}
-    };
-
-    class StringGetCommand : public StringCommand
+    class StringGetCommand : public KeyedCommand
     {
     public:
-        StringGetCommand(const std::string &str_name) : StringCommand(str_name) {}
+        StringGetCommand(const std::string &str_name) : KeyedCommand(str_name) {}
         std::string execute() override;
     };
 
-    class StringExistsCommand : public StringCommand
+    class StringExistsCommand : public KeyedCommand
     {
     public:
-        StringExistsCommand(const std::string &str_name) : StringCommand(str_name) {}
+        StringExistsCommand(const std::string &str_name) : KeyedCommand(str_name) {}
         std::string execute() override;
     };
 
-    class StringLenCommand : public StringCommand
+    class StringLenCommand : public KeyedCommand
     {
     public:
-        StringLenCommand(const std::string &str_name) : StringCommand(str_name) {}
+        StringLenCommand(const std::string &str_name) : KeyedCommand(str_name) {}
         std::string execute() override;
     };
 
-    class StringSubCommand : public StringCommand
+    class StringSubCommand : public KeyedCommand
     {
     private:
         uint start_pos_;
@@ -92,33 +82,33 @@ namespace db
 
     public:
         StringSubCommand(const std::string &str_name, uint start_pos, uint end_pos)
-            : StringCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
+            : KeyedCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
         std::string execute() override;
     };
 
-    class StringAppendCommand : public StringCommand
+    class StringAppendCommand : public KeyedCommand
     {
     private:
         std::string value_;
 
     public:
         StringAppendCommand(const std::string &str_name, const std::string &value)
-            : StringCommand(str_name), value_(value) {}
+            : KeyedCommand(str_name), value_(value) {}
         std::string execute() override;
     };
 
-    class StringPrependCommand : public StringCommand
+    class StringPrependCommand : public KeyedCommand
     {
     private:
         std::string value_;
 
     public:
         StringPrependCommand(const std::string &str_name, const std::string &value)
-            : StringCommand(str_name), value_(value) {}
+            : KeyedCommand(str_name), value_(value) {}
         std::string execute() override;
     };
 
-    class StringInsertCommand : public StringCommand
+    class StringInsertCommand : public KeyedCommand
     {
     private:
         uint pos_;
@@ -126,11 +116,11 @@ namespace db
 
     public:
         StringInsertCommand(const std::string &str_name, uint pos, const std::string &value)
-            : StringCommand(str_name), pos_(pos), value_(value) {}
+            : KeyedCommand(str_name), pos_(pos), value_(value) {}
         std::string execute() override;
     };
 
-    class StringTrimCommand : public StringCommand
+    class StringTrimCommand : public KeyedCommand
     {
     private:
         uint start_pos_;
@@ -138,29 +128,126 @@ namespace db
 
     public:
         StringTrimCommand(const std::string &str_name, uint start_pos, uint end_pos)
-            : StringCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
+            : KeyedCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
         std::string execute() override;
     };
 
-    class StringLtrimCommand : public StringCommand
+    class StringLtrimCommand : public KeyedCommand
     {
     private:
         uint char_count_;
 
     public:
         StringLtrimCommand(const std::string &str_name, uint char_count)
-            : StringCommand(str_name), char_count_(char_count) {}
+            : KeyedCommand(str_name), char_count_(char_count) {}
         std::string execute() override;
     };
 
-    class StringRtrimCommand : public StringCommand
+    class StringRtrimCommand : public KeyedCommand
     {
     private:
         uint char_count_;
 
     public:
         StringRtrimCommand(const std::string &str_name, uint char_count)
-            : StringCommand(str_name), char_count_(char_count) {}
+            : KeyedCommand(str_name), char_count_(char_count) {}
+        std::string execute() override;
+    };
+
+    // SETS
+
+    class SetAddCommand : public KeyedCommand
+    {
+    private:
+        std::string value_;
+
+    public:
+        SetAddCommand(const std::string &set_name, const std::string &value) : KeyedCommand(set_name), value_(value) {}
+        std::string execute() override;
+    };
+
+    class SetLenCommand : public KeyedCommand
+    {
+    public:
+        SetLenCommand(const std::string &set_name) : KeyedCommand(set_name) {}
+        std::string execute() override;
+    };
+
+    class SetIntersectionCommand : public Command
+    {
+    private:
+        std::vector<std::string> set_names_;
+
+    public:
+        SetIntersectionCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        std::string execute() override;
+    };
+
+    class SetDifferenceCommand : public Command
+    {
+    private:
+        std::vector<std::string> set_names_;
+
+    public:
+        SetDifferenceCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        std::string execute() override;
+    };
+
+    class SetUnionCommand : public Command
+    {
+    private:
+        std::vector<std::string> set_names_;
+
+    public:
+        SetUnionCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        std::string execute() override;
+    };
+
+    class SetContainsCommand : public KeyedCommand
+    {
+    private:
+        std::string value_;
+
+    public:
+        SetContainsCommand(const std::string &set_name, const std::string &value) : KeyedCommand(set_name), value_(value) {}
+        std::string execute() override;
+    };
+
+    class SetGetAllCommand : public KeyedCommand
+    {
+    public:
+        SetGetAllCommand(const std::string &set_name) : KeyedCommand(set_name) {}
+        std::string execute() override;
+    };
+
+    class SetMoveCommand : public KeyedCommand
+    {
+    private:
+        std::string value_;
+        std::string dest_set_name_;
+
+    public:
+        SetMoveCommand(const std::string &set_name, const std::string &value, const std::string &dest_set_name) : KeyedCommand(set_name), value_(value), dest_set_name_(dest_set_name) {}
+        std::string execute() override;
+    };
+
+    class SetGetCommand : public KeyedCommand
+    {
+    private:
+        std::optional<std::string> value_;
+
+    public:
+        SetGetCommand(const std::string &set_name, const std::optional<std::string> value) : KeyedCommand(set_name), value_(value) {}
+        std::string execute() override;
+    };
+
+    class SetPopCommand : public KeyedCommand
+    {
+    private:
+        std::optional<std::string> value_;
+
+    public:
+        SetPopCommand(const std::string &set_name, const std::optional<std::string> value) : KeyedCommand(set_name), value_(value) {}
         std::string execute() override;
     };
 
@@ -292,6 +379,87 @@ namespace db
             {"RTRIM", boost::make_shared<StringRtrimCommandFactory>()}};
     };
 
+    // SETS
+
+    class SetAddCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetLenCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetIntersectionCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetDifferenceCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetUnionCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetContainsCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetGetAllCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetMoveCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetGetCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetPopCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+    };
+
+    class SetCommandFactory : public CommandFactory
+    {
+    public:
+        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    private:
+        std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
+            {"ADD", boost::make_shared<SetAddCommandFactory>()},
+            {"LEN", boost::make_shared<SetLenCommandFactory>()},
+            {"INTER", boost::make_shared<SetIntersectionCommandFactory>()},
+            {"DIFF", boost::make_shared<SetDifferenceCommandFactory>()},
+            {"UNION", boost::make_shared<SetUnionCommandFactory>()},
+            {"CONTAINS", boost::make_shared<SetContainsCommandFactory>()},
+            {"GETALL", boost::make_shared<SetGetAllCommandFactory>()},
+            {"MOVE", boost::make_shared<SetMoveCommandFactory>()},
+            {"GET", boost::make_shared<SetGetCommandFactory>()},
+            {"POP", boost::make_shared<SetPopCommandFactory>()}};
+    };
+
     // OTHER
 
     class DeleteCommandFactory : public CommandFactory
@@ -313,12 +481,6 @@ namespace db
     };
 
     class QueueCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
-    };
-
-    class SetCommandFactory : public CommandFactory
     {
     public:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);

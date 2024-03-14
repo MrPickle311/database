@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace db
 {
@@ -25,8 +26,31 @@ namespace db
         void ltrim(const std::string &name, const unsigned int count);
         void rtrim(const std::string &name, const unsigned int count);
 
-        static StringRepository& get_instance(){
+        static StringRepository &get_instance()
+        {
             static StringRepository instance;
+            return instance;
+        }
+    };
+
+    class SetRepository : public Repository
+    {
+    public:
+        ~SetRepository(){};
+        void create(const std::string &name);
+        void add(const std::string &name, const std::string &value);
+        unsigned int len(const std::string &name);
+        std::vector<std::string> intersection(const std::vector<std::string> &names);
+        std::vector<std::string> difference(const std::vector<std::string> &names);
+        std::vector<std::string> union_(const std::vector<std::string> &names); // Note: underscore used to avoid conflict with C++ union keyword
+        bool contains(const std::string &name, const std::string &value);
+        std::vector<std::string> get_all(const std::string &name);
+        void move(const std::string &name1, const std::string &value, const std::string &name2);
+        std::string get(const std::string &name, const std::string &optionalValue = "");
+        std::string pop(const std::string &name, const std::string &optionalValue = "");
+
+        static SetRepository &get_instance(){
+            static SetRepository instance;
             return instance;
         }
     };
