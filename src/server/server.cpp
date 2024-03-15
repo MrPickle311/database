@@ -82,7 +82,7 @@ namespace db
     }
 
     DefaultTcpServer::DefaultTcpServer(const short port, boost::shared_ptr<DefaultExecutionIoC> execution_ioc)
-        : io_service_{},
+        : io_service_{10},
           acceptor_(this->io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
           execution_ioc_{execution_ioc}
     {

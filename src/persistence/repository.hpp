@@ -3,6 +3,7 @@
 #include <vector>
 #include <tbb/concurrent_hash_map.h>
 #include <tbb/concurrent_set.h>
+#include <tbb/concurrent_queue.h>
 
 namespace db
 {
@@ -44,7 +45,7 @@ namespace db
         void add(const std::string &name, const std::string &value);
         unsigned int len(const std::string &name);
         std::vector<std::string> intersection(const std::vector<std::string> &names);
-        std::vector<std::string> difference(const std::string& name_1, const std::string& name_2);
+        std::vector<std::string> difference(const std::string &name_1, const std::string &name_2);
         std::vector<std::string> union_(const std::vector<std::string> &names); // Note: underscore used to avoid conflict with C++ union keyword
         bool contains(const std::string &name, const std::string &value);
         std::vector<std::string> get_all(const std::string &name);
@@ -59,12 +60,14 @@ namespace db
 
     class QueueRepository
     {
+    private:
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>> data_;
+
     public:
         virtual ~QueueRepository() {}
         void create(const std::string &name);
         void push(const std::string &name, const std::string &value);
         std::string pop(const std::string &name);
-        std::string poll(const std::string &name);
 
         static QueueRepository &get_instance()
         {
@@ -75,6 +78,9 @@ namespace db
 
     class HashRepository
     {
+    private:
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>> data_;
+
     public:
         virtual ~HashRepository() {}
         void create(const std::string &name);

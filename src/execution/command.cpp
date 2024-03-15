@@ -188,11 +188,6 @@ namespace db
         return QueueRepository::get_instance().pop(key_name_);
     }
 
-    std::string QueuePollCommand::execute()
-    {
-        return QueueRepository::get_instance().poll(key_name_);
-    }
-
     // HASHES
 
     std::string CreateHashCommand::execute()
@@ -438,11 +433,6 @@ namespace db
     boost::shared_ptr<Command> QueuePopCommandFactory::create_command(const std::vector<std::string> &input)
     {
         return boost::make_shared<QueuePopCommand>(input[0]);
-    }
-
-    boost::shared_ptr<Command> QueuePollCommandFactory::create_command(const std::vector<std::string> &input)
-    {
-        return boost::make_shared<QueuePollCommand>(input[0]);
     }
 
     // HASHES FACTORIES

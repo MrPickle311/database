@@ -256,13 +256,6 @@ namespace db
         std::string execute() override;
     };
 
-    class QueuePollCommand : public KeyedCommand
-    {
-    public:
-        QueuePollCommand(const std::string &queue_name) : KeyedCommand(queue_name) {}
-        std::string execute() override;
-    };
-
     // HASHES
 
     class HashDelCommand : public KeyedCommand
@@ -565,12 +558,6 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
     };
 
-    class QueuePollCommandFactory : public CommandFactory
-    {
-    public:
-        boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
-    };
-
     class QueueCommandFactory : public CommandFactory
     {
     public:
@@ -579,8 +566,7 @@ namespace db
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
             {"PUSH", boost::make_shared<QueuePushCommandFactory>()},
-            {"POP", boost::make_shared<QueuePopCommandFactory>()},
-            {"POLL", boost::make_shared<QueuePollCommandFactory>()}};
+            {"POP", boost::make_shared<QueuePopCommandFactory>()}};
     };
 
     // HASHES

@@ -387,69 +387,185 @@ namespace db
 
     void QueueRepository::create(const std::string &name)
     {
-        std::cout << "Creating queue: " << name << std::endl;
+        // Use an accessor to safely insert the string into the map
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>>::accessor a;
+        data_.insert(a, name);
     }
 
     void QueueRepository::push(const std::string &name, const std::string &value)
     {
-        std::cout << "Pushing value: " << value << " to queue: " << name << std::endl;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            a->second.push(value);
+        }
+        else
+        {
+        }
     }
 
     std::string QueueRepository::pop(const std::string &name)
     {
-        return std::string{"23"};
-    }
-
-    std::string QueueRepository::poll(const std::string &name)
-    {
-        return std::string{"67"};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            std::string value;
+            a->second.try_pop(value);
+            return value;
+        }
+        // Kolejka nie istnieje, obsłuż ten przypadek
+        return ""; // Możesz tu rzucić wyjątek lub zwrócić inną wartość
     }
 
     // HASHES
 
     void HashRepository::create(const std::string &name)
     {
-        std::cout << "Creating hash: " << name << std::endl;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        data_.insert(a, name);
     }
 
     void HashRepository::del(const std::string &name, const std::string &key)
     {
-        std::cout << "Deleting key: " << key << " from hash: " << name << std::endl;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Remove the key-value pair if the key exists in the inner hash
+            a->second.erase(key);
+        }
+        else
+        {
+            std::cout << "Hash '" << name << "' does not exist." << std::endl;
+        }
     }
 
     bool HashRepository::exists(const std::string &name, const std::string &key)
     {
-        return true;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Check if the key exists in the inner hash
+            return a->second.count(key) > 0;
+        }
+        else
+        {
+            return false; // Hash doesn't exist, key cannot exist
+        }
     }
 
     std::string HashRepository::get(const std::string &name, const std::string &key)
     {
-        return std::string{"123"};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Check if the key exists and return its value
+            if (a->second.count(key) > 0)
+            {
+                tbb::concurrent_hash_map<std::string, std::string>::accessor b;
+                a->second.find(b, key);
+                return b->second;
+            }
+            else
+            {
+                return ""; // Key not found, handle differently if needed
+            }
+        }
+        else
+        {
+            return ""; // Hash doesn't exist, key cannot exist
+        }
     }
 
     std::vector<std::pair<std::string, std::string>> HashRepository::get_all(const std::string &name)
     {
-        return std::vector<std::pair<std::string, std::string>>{{"1", "2"}, {"3", "4"}};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Create a vector to store key-value pairs
+            std::vector<std::pair<std::string, std::string>> all_data;
+            for (auto it = a->second.begin(); it != a->second.end(); ++it)
+            {
+                all_data.push_back(*it);
+            }
+            return all_data;
+        }
+        else
+        {
+            return {}; // Hash doesn't exist
+        }
     }
 
     std::vector<std::string> HashRepository::get_keys(const std::string &name)
     {
-        return std::vector<std::string>{"1", "2", "3", "4"};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Extract all keys from the inner hash
+            std::vector<std::string> all_keys;
+            for (auto it = a->second.begin(); it != a->second.end(); ++it)
+            {
+                all_keys.push_back(it->first); // Access the key from the pair
+            }
+            return all_keys;
+        }
+        else
+        {
+            return {}; // Hash doesn't exist
+        }
     }
 
     void HashRepository::set(const std::string &name, const std::string &key, const std::string &value)
     {
-        std::cout << "Setting " << name << " to " << key << std::endl;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Insert or update the key-value pair in the inner hash
+            a->second.insert(std::make_pair(key, value));
+        }
+        else
+        {
+            std::cout << "Hash '" << name << "' does not exist. Creating it." << std::endl;
+            // Create a new inner hash and insert the key-value pair
+            tbb::concurrent_hash_map<std::string, std::string> new_hash;
+            new_hash.insert(std::make_pair(key, value));
+            data_.insert(std::make_pair(name, new_hash));
+        }
     }
 
     uint HashRepository::len(const std::string &name)
     {
-        return 333;
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Return the size of the inner hash (number of key-value pairs)
+            return a->second.size();
+        }
+        else
+        {
+            return 0; // Hash doesn't exist
+        }
     }
 
     std::vector<std::string> HashRepository::search(const std::string &name, const std::string &query)
     {
-        return std::vector<std::string>{"1", "2", "3", "4"};
+        tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+        if (data_.find(a, name))
+        {
+            // Extract all keys from the inner hash
+            std::vector<std::string> result;
+            for (auto it = a->second.begin(); it != a->second.end(); ++it)
+            {
+                result.push_back(it->first); // Access the key from the pair
+            }
+            result;
+            std::erase_if(result, [&](const std::string &key)
+                          { return key.find(query) == std::string::npos; });
+            return result;
+        }
+        else
+        {
+            return {}; // Hash doesn't exist
+        }
     }
 
     std::vector<std::string> GlobalRepository::keys(std::string &pattern)
