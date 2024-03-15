@@ -8,11 +8,17 @@ namespace db
     // STRING
     void StringRepository::create(const std::string &name, const std::string &value)
     {
+        KeysStorage &storage = KeysStorage::get_instance();
+        if (storage.contains(name))
+        {
+            return;
+        }
         // Use an accessor to safely insert the string into the map
         tbb::concurrent_hash_map<std::string, std::string>::accessor a;
         data_.insert(a, name);
         // Initialize the value to an empty string
         a->second = value;
+        storage.add(name);
     }
 
     std::string StringRepository::get(const std::string &name)
@@ -202,9 +208,15 @@ namespace db
     // Create a new set with the given name (empty initially)
     void SetRepository::create(const std::string &name)
     {
+        KeysStorage &storage = KeysStorage::get_instance();
+        if (storage.contains(name))
+        {
+            return;
+        }
         tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
         data_.insert(a, name);
         a->second = tbb::concurrent_set<std::string>{};
+        storage.add(name);
     }
 
     // Add a value to the set identified by the name
@@ -387,9 +399,15 @@ namespace db
 
     void QueueRepository::create(const std::string &name)
     {
+        KeysStorage &storage = KeysStorage::get_instance();
+        if (storage.contains(name))
+        {
+            return;
+        }
         // Use an accessor to safely insert the string into the map
         tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>>::accessor a;
         data_.insert(a, name);
+        storage.add(name);
     }
 
     void QueueRepository::push(const std::string &name, const std::string &value)
@@ -421,8 +439,14 @@ namespace db
 
     void HashRepository::create(const std::string &name)
     {
+        KeysStorage &storage = KeysStorage::get_instance();
+        if (storage.contains(name))
+        {
+            return;
+        }
         tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
         data_.insert(a, name);
+        storage.add(name);
     }
 
     void HashRepository::del(const std::string &name, const std::string &key)
@@ -570,11 +594,42 @@ namespace db
 
     std::vector<std::string> GlobalRepository::keys(std::string &pattern)
     {
-        return std::vector<std::string>{"1", "2", "3", "4", "5"};
+        auto &&result = keys_storage_.get_keys();
+
+        if (pattern != "*")
+        {
+            std::erase_if(result, [&](const std::string &key)
+                          { return key.find(pattern) == std::string::npos; });
+        }
+
+        return std::vector<std::string>{result.begin(), result.end()};
     }
 
     void GlobalRepository::del(std::string &key)
     {
-        std::cout << "Deleting key: " << key << std::endl;
+        if (keys_storage_.contains(key))
+        {
+            if (string_repository_.data_.erase(key))
+            {
+                keys_storage_.remove(key);
+                return;
+            }
+            if (set_repository_.data_.erase(key))
+            {
+                keys_storage_.remove(key);
+                return;
+            }
+            if (queue_repository_.data_.erase(key))
+            {
+                keys_storage_.remove(key);
+                return;
+            }
+            if (hash_repository_.data_.erase(key))
+            {
+                keys_storage_.remove(key);
+                return;
+            }
+        }
     }
+
 }

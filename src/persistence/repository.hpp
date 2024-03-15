@@ -4,12 +4,48 @@
 #include <tbb/concurrent_hash_map.h>
 #include <tbb/concurrent_set.h>
 #include <tbb/concurrent_queue.h>
+#include <set>
 
 namespace db
 {
 
+    class GlobalRepository;
+
+    class KeysStorage
+    {
+    private:
+        tbb::concurrent_set<std::string> keys_;
+
+    public:
+        void add(const std::string &key)
+        {
+            keys_.insert(key);
+        }
+        bool contains(const std::string &key)
+        {
+            return keys_.find(key) != keys_.end();
+        }
+        void remove(const std::string &key)
+        {
+            keys_.unsafe_erase(key);
+        }
+
+        std::set<std::string> get_keys()
+        {
+            return std::set<std::string>(keys_.begin(), keys_.end());
+        }
+
+        static KeysStorage &get_instance()
+        {
+            static KeysStorage instance;
+            return instance;
+        }
+    };
+
     class StringRepository
     {
+        friend class GlobalRepository;
+
     private:
         tbb::concurrent_hash_map<std::string, std::string> data_;
 
@@ -36,6 +72,8 @@ namespace db
 
     class SetRepository
     {
+        friend class GlobalRepository;
+
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>> data_;
 
@@ -60,6 +98,8 @@ namespace db
 
     class QueueRepository
     {
+        friend class GlobalRepository;
+
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_queue<std::string>> data_;
 
@@ -78,6 +118,8 @@ namespace db
 
     class HashRepository
     {
+        friend class GlobalRepository;
+
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>> data_;
 
@@ -102,6 +144,23 @@ namespace db
 
     class GlobalRepository
     {
+    private:
+        StringRepository &string_repository_;
+        SetRepository &set_repository_;
+        QueueRepository &queue_repository_;
+        HashRepository &hash_repository_;
+        KeysStorage &keys_storage_;
+
+        GlobalRepository(StringRepository &string_repository,
+                         SetRepository &set_repository,
+                         QueueRepository &queue_repository,
+                         HashRepository &hash_repository,
+                         KeysStorage &keys_storage) : string_repository_(string_repository),
+                                                      set_repository_(set_repository),
+                                                      queue_repository_(queue_repository),
+                                                      hash_repository_(hash_repository),
+                                                      keys_storage_{keys_storage} {}
+
     public:
         virtual ~GlobalRepository() {}
         std::vector<std::string> keys(std::string &pattern);
@@ -109,7 +168,7 @@ namespace db
 
         static GlobalRepository &get_instance()
         {
-            static GlobalRepository instance;
+            static GlobalRepository instance{StringRepository::get_instance(), SetRepository::get_instance(), QueueRepository::get_instance(), HashRepository::get_instance(), KeysStorage::get_instance()};
             return instance;
         }
     };
