@@ -5,6 +5,7 @@
 #include <command.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/find.hpp>
+#include <repository.hpp>
 
 namespace db
 {
@@ -41,10 +42,11 @@ namespace db
         {
             std::istream is(&this->buffer_);
             std::string received_data(std::istreambuf_iterator<char>(is), {});
-            std::string trimmed_data = boost::trim_right_copy_if(received_data, [](char c) { return c != '|'; });
+            std::string trimmed_data = boost::trim_right_copy_if(received_data, [](char c)
+                                                                 { return c != '|'; });
             trimmed_data = trimmed_data.substr(0, trimmed_data.size() - 1);
 
-            std::cout << "Received data[" << trimmed_data << "]" <<  std::endl;
+            std::cout << "Received data[" << trimmed_data << "]" << std::endl;
 
             std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser().extract_commands(trimmed_data);
             std::string response;
@@ -84,9 +86,11 @@ namespace db
     DefaultTcpServer::DefaultTcpServer(const short port, boost::shared_ptr<DefaultExecutionIoC> execution_ioc)
         : io_service_{10},
           acceptor_(this->io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-          execution_ioc_{execution_ioc}
+          execution_ioc_{execution_ioc},
+          timer_{this->io_service_, boost::posix_time::seconds(10)}
     {
         accept();
+        timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }
 
     void DefaultTcpServer::run()
@@ -116,5 +120,12 @@ namespace db
             return;
         }
         accept();
+    }
+    void DefaultTcpServer::schedule(const boost::system::error_code &ec)
+    {
+        std::cout << "Doing scheduled stuff" << std::endl;
+        DataExporter::get_instance().save("db_data");
+        timer_.expires_from_now(boost::posix_time::seconds(10));
+        timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }
 }

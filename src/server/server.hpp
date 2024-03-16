@@ -67,11 +67,13 @@ namespace db
     private:
         void accept() override;
         void handle_accept(boost::shared_ptr<Connection> conn, const boost::system::error_code &ec) override;
+        void schedule(const boost::system::error_code &ec);
 
     private:
         boost::asio::io_service io_service_;
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::streambuf buffer_;
         boost::shared_ptr<DefaultExecutionIoC> execution_ioc_;
+        boost::asio::deadline_timer timer_;
     };
 }

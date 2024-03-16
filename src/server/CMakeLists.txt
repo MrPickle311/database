@@ -13,6 +13,7 @@ target_include_directories(
   server
   PUBLIC .
   ../execution
+  ../persistence
 )
 
 target_link_libraries(server Boost::system)

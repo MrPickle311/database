@@ -5,11 +5,15 @@
 #include <tbb/concurrent_set.h>
 #include <tbb/concurrent_queue.h>
 #include <set>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 namespace db
 {
 
     class GlobalRepository;
+    class DataExporter;
 
     class KeysStorage
     {
@@ -45,6 +49,7 @@ namespace db
     class StringRepository
     {
         friend class GlobalRepository;
+        friend class DataExporter;
 
     private:
         tbb::concurrent_hash_map<std::string, std::string> data_;
@@ -73,6 +78,7 @@ namespace db
     class SetRepository
     {
         friend class GlobalRepository;
+        friend class DataExporter;
 
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>> data_;
@@ -119,6 +125,7 @@ namespace db
     class HashRepository
     {
         friend class GlobalRepository;
+        friend class DataExporter;
 
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>> data_;
@@ -170,6 +177,94 @@ namespace db
         {
             static GlobalRepository instance{StringRepository::get_instance(), SetRepository::get_instance(), QueueRepository::get_instance(), HashRepository::get_instance(), KeysStorage::get_instance()};
             return instance;
+        }
+    };
+
+    class DataExporter
+    {
+    public:
+        static bool save(const std::string &filename)
+        {
+            std::ofstream file(filename);
+            if (!file.is_open())
+            {
+                std::cerr << "Error opening file: " << filename << std::endl;
+                return false;
+            }
+
+            file.clear();
+            // Write header
+            file << "[HEADER]\n";
+
+            // Save StringRepository data
+            saveStringData(file);
+            file << "\n";
+
+            // Save SetRepository data
+            saveSetData(file);
+            file << "\n";
+
+            // Save HashRepository data
+            saveHashData(file);
+            file << "\n";
+
+            // Write footer
+            file << "[FOOTER]\n";
+
+            file.close();
+            return true;
+        }
+
+        static DataExporter &get_instance()
+        {
+            static DataExporter instance;
+            return instance;
+        }
+
+    private:
+        static void saveStringData(std::ofstream &file)
+        {
+            auto &string_repository = StringRepository::get_instance();
+            int string_count = string_repository.data_.size();
+            file << "[" << string_count << "] ";
+            for (const auto &key_value : string_repository.data_)
+            {
+                string_count++;
+                file << key_value.first << " " << key_value.second.size() << " " << key_value.second << " ";
+            }
+        }
+
+        static void saveSetData(std::ofstream &file)
+        {
+            auto &set_repository = SetRepository::get_instance();
+            int set_count = set_repository.data_.size();
+            file << "[" << set_count << "] ";
+            for (const auto &key_value : set_repository.data_)
+            {
+                set_count++;
+                std::stringstream set_data_stream;
+                for (const auto &value : key_value.second)
+                {
+                    set_data_stream << value << " ";
+                }
+                file << key_value.first << " " << key_value.second.size() << " " << set_data_stream.str() << " ";
+            }
+        }
+
+        static void saveHashData(std::ofstream &file)
+        {
+            auto &hash_repository = HashRepository::get_instance();
+            int map_count = hash_repository.data_.size();
+            file << "[" << map_count << "] ";
+            for (const auto &key_value : hash_repository.data_)
+            {
+                map_count++;
+                file << key_value.first << " " << key_value.second.size() << " ";
+                for (const auto &inner_key_value : key_value.second)
+                {
+                    file << inner_key_value.first << " " << inner_key_value.second << " ";
+                }
+            }
         }
     };
 
