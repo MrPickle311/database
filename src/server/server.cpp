@@ -89,6 +89,7 @@ namespace db
           execution_ioc_{execution_ioc},
           timer_{this->io_service_, boost::posix_time::seconds(10)}
     {
+        DataImporter::load("db_data");
         accept();
         timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }

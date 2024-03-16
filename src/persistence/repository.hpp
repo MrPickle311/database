@@ -14,6 +14,7 @@ namespace db
 
     class GlobalRepository;
     class DataExporter;
+    class DataImporter;
 
     class KeysStorage
     {
@@ -50,6 +51,7 @@ namespace db
     {
         friend class GlobalRepository;
         friend class DataExporter;
+        friend class DataImporter;
 
     private:
         tbb::concurrent_hash_map<std::string, std::string> data_;
@@ -79,6 +81,7 @@ namespace db
     {
         friend class GlobalRepository;
         friend class DataExporter;
+        friend class DataImporter;
 
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>> data_;
@@ -126,6 +129,7 @@ namespace db
     {
         friend class GlobalRepository;
         friend class DataExporter;
+        friend class DataImporter;
 
     private:
         tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>> data_;
@@ -185,31 +189,28 @@ namespace db
     public:
         static bool save(const std::string &filename)
         {
-            std::ofstream file(filename);
+            std::fstream file(filename, std::ios::binary | std::ios::out);
             if (!file.is_open())
             {
                 std::cerr << "Error opening file: " << filename << std::endl;
                 return false;
             }
-
             file.clear();
+
             // Write header
-            file << "[HEADER]\n";
+            file.write("[HEADER]\0", 9);
 
             // Save StringRepository data
             saveStringData(file);
-            file << "\n";
 
             // Save SetRepository data
             saveSetData(file);
-            file << "\n";
 
             // Save HashRepository data
             saveHashData(file);
-            file << "\n";
 
             // Write footer
-            file << "[FOOTER]\n";
+            file.write("[FOOTER]\3", 9);
 
             file.close();
             return true;
@@ -222,50 +223,205 @@ namespace db
         }
 
     private:
-        static void saveStringData(std::ofstream &file)
+        static void saveStringData(std::fstream &file)
         {
             auto &string_repository = StringRepository::get_instance();
-            int string_count = string_repository.data_.size();
-            file << "[" << string_count << "] ";
+            uint32_t string_count = string_repository.data_.size();
+            file.write(reinterpret_cast<char *>(&string_count), sizeof(string_count));
             for (const auto &key_value : string_repository.data_)
             {
-                string_count++;
-                file << key_value.first << " " << key_value.second.size() << " " << key_value.second << " ";
+                uint32_t key_length = key_value.first.size();
+                file.write(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                file.write(key_value.first.data(), key_length);
+                file.put('\0');
+                uint32_t value_length = key_value.second.size();
+                file.write(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                file.write(key_value.second.data(), value_length);
+                file.put('\0');
             }
         }
 
-        static void saveSetData(std::ofstream &file)
+        static void saveSetData(std::fstream &file)
         {
             auto &set_repository = SetRepository::get_instance();
-            int set_count = set_repository.data_.size();
-            file << "[" << set_count << "] ";
+            uint32_t set_count = set_repository.data_.size();
+            file.write(reinterpret_cast<char *>(&set_count), sizeof(set_count));
             for (const auto &key_value : set_repository.data_)
             {
-                set_count++;
-                std::stringstream set_data_stream;
+                uint32_t key_length = key_value.first.size();
+                file.write(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                file.write(key_value.first.data(), key_length);
+                file.put('\0');
+
+                uint32_t value_count = key_value.second.size();
+                file.write(reinterpret_cast<char *>(&value_count), sizeof(value_count));
                 for (const auto &value : key_value.second)
                 {
-                    set_data_stream << value << " ";
+                    uint32_t value_length = value.size();
+                    file.write(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                    file.write(value.data(), value_length);
+                    file.put('\0');
                 }
-                file << key_value.first << " " << key_value.second.size() << " " << set_data_stream.str() << " ";
             }
         }
 
-        static void saveHashData(std::ofstream &file)
+        static void saveHashData(std::fstream &file)
         {
             auto &hash_repository = HashRepository::get_instance();
-            int map_count = hash_repository.data_.size();
-            file << "[" << map_count << "] ";
+            uint32_t map_count = hash_repository.data_.size();
+            file.write(reinterpret_cast<char *>(&map_count), sizeof(map_count));
             for (const auto &key_value : hash_repository.data_)
             {
-                map_count++;
-                file << key_value.first << " " << key_value.second.size() << " ";
+                uint32_t key_length = key_value.first.size();
+                file.write(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                file.write(key_value.first.data(), key_length);
+                file.put('\0');
+
+                uint32_t inner_map_count = key_value.second.size();
+                file.write(reinterpret_cast<char *>(&inner_map_count), sizeof(inner_map_count));
                 for (const auto &inner_key_value : key_value.second)
                 {
-                    file << inner_key_value.first << " " << inner_key_value.second << " ";
+                    uint32_t inner_key_length = inner_key_value.first.size();
+                    file.write(reinterpret_cast<char *>(&inner_key_length), sizeof(inner_key_length));
+                    file.write(inner_key_value.first.data(), inner_key_length);
+                    file.put('\0');
+
+                    uint32_t value_length = inner_key_value.second.size();
+                    file.write(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                    file.write(inner_key_value.second.data(), value_length);
+                    file.put('\0');
                 }
             }
         }
     };
 
-};
+    class DataImporter
+    {
+    public:
+        static bool load(const std::string &filename)
+        {
+            std::ifstream file(filename, std::ios::binary);
+            if (!file.is_open())
+            {
+                std::cerr << "Error opening file: " << filename << std::endl;
+                return false;
+            }
+
+            // Read header
+            char header[9];
+            file.read(header, sizeof(header));
+            if (std::string(header) != "[HEADER]\0")
+            {
+                std::cerr << "Invalid file format: missing header." << std::endl;
+                return false;
+            }
+
+            // Load StringRepository data
+            std::cout << "Loading string repository data..." << std::endl;
+            loadStringData(file);
+
+            // Load SetRepository data
+            loadSetData(file);
+
+            // Load HashRepository data
+            loadHashData(file);
+
+            file.close();
+            return true;
+        }
+
+    private:
+        static void loadStringData(std::ifstream &file)
+        {
+            uint32_t string_count;
+            file.read(reinterpret_cast<char *>(&string_count), sizeof(string_count));
+            for (int i = 0; i < string_count; ++i)
+            {
+                uint32_t key_length;
+                file.read(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                std::string key(key_length, '\0');
+                file.read(&key[0], key_length);
+                file.get(); // Discard null terminator
+
+                uint32_t value_length;
+                file.read(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                std::string value(value_length, '\0');
+                file.read(&value[0], value_length);
+                file.get(); // Discard null terminator
+
+                tbb::concurrent_hash_map<std::string, std::string>::accessor a;
+                StringRepository::get_instance().data_.insert(a, key);
+                a->second = value;
+                KeysStorage::get_instance().add(key);
+            }
+        }
+
+        static void loadSetData(std::ifstream &file)
+        {
+            uint32_t set_count;
+            file.read(reinterpret_cast<char *>(&set_count), sizeof(set_count));
+            for (int i = 0; i < set_count; ++i)
+            {
+                uint32_t key_length;
+                file.read(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                std::string key(key_length, '\0');
+                file.read(&key[0], key_length);
+                file.get(); // Discard null terminator
+
+                uint32_t value_count;
+                file.read(reinterpret_cast<char *>(&value_count), sizeof(value_count));
+                std::set<std::string> value_set;
+                for (int j = 0; j < value_count; ++j)
+                {
+                    uint32_t value_length;
+                    file.read(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                    std::string value(value_length, '\0');
+                    file.read(&value[0], value_length);
+                    file.get(); // Discard null terminator
+                    value_set.insert(value);
+                }
+                tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a;
+                SetRepository::get_instance().data_.insert(a, key);
+                a->second = tbb::concurrent_set<std::string>{value_set.begin(), value_set.end()};
+                KeysStorage::get_instance().add(key);
+            }
+        }
+
+        static void loadHashData(std::ifstream &file)
+        {
+            uint32_t map_count;
+            file.read(reinterpret_cast<char *>(&map_count), sizeof(map_count));
+            for (int i = 0; i < map_count; ++i)
+            {
+                uint32_t key_length;
+                file.read(reinterpret_cast<char *>(&key_length), sizeof(key_length));
+                std::string key(key_length, '\0');
+                file.read(&key[0], key_length);
+                file.get(); // Discard null terminator
+
+                uint32_t inner_map_count;
+                file.read(reinterpret_cast<char *>(&inner_map_count), sizeof(inner_map_count));
+                std::unordered_map<std::string, std::string> inner_map;
+                for (int j = 0; j < inner_map_count; ++j)
+                {
+                    uint32_t inner_key_length;
+                    file.read(reinterpret_cast<char *>(&inner_key_length), sizeof(inner_key_length));
+                    std::string inner_key(inner_key_length, '\0');
+                    file.read(&inner_key[0], inner_key_length);
+                    file.get(); // Discard null terminator
+
+                    uint32_t value_length;
+                    file.read(reinterpret_cast<char *>(&value_length), sizeof(value_length));
+                    std::string value(value_length, '\0');
+                    file.read(&value[0], value_length);
+                    file.get(); // Discard null terminator
+                    inner_map[inner_key] = value;
+                }
+                tbb::concurrent_hash_map<std::string, tbb::concurrent_hash_map<std::string, std::string>>::accessor a;
+                HashRepository::get_instance().data_.insert(a, key);
+                a->second = tbb::concurrent_hash_map<std::string, std::string>{inner_map.begin(), inner_map.end()};
+                KeysStorage::get_instance().add(key);
+            }
+        };
+    };
+}
