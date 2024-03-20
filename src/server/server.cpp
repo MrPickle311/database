@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/find.hpp>
 #include <repository.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace db
 {
@@ -40,6 +41,7 @@ namespace db
     {
         if (!ec)
         {
+            std::string response;
             std::istream is(&this->buffer_);
             std::string received_data(std::istreambuf_iterator<char>(is), {});
             std::string trimmed_data = boost::trim_right_copy_if(received_data, [](char c)
@@ -48,11 +50,23 @@ namespace db
 
             std::cout << "Received data[" << trimmed_data << "]" << std::endl;
 
-            std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser().extract_commands(trimmed_data);
-            std::string response;
-            for (auto &&command : commands)
+            try
             {
-                response = command->execute();
+                std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser().extract_commands(trimmed_data);
+                for (auto &&command : commands)
+                {
+                    response = command->execute();
+                }
+                response = "[1][" + response + "]" + "[]\n";
+            }
+            catch (const ExecutionException &e)
+            {
+                std::cout << "Error executing command  " << e.get_message() << std::endl;
+                response = "[0][" + e.get_message() + "][" + e.get_code() + "]\n";
+            }
+            catch (const boost::bad_lexical_cast &e)
+            {
+                response = "[0][" + std::string{e.what()} + "][BAD_CAST]\n";
             }
 
             std::vector<char> data(response.length());

@@ -8,6 +8,48 @@
 
 namespace db
 {
+    class ExecutionException : public std::exception
+    {
+    private:
+        std::string message_;
+        std::string code_;
+
+    public:
+        ExecutionException(const std::string &message, const std::string &code) : message_(message), code_(code) {}
+        std::string get_message() const
+        {
+            return message_;
+        }
+        std::string get_code() const
+        {
+            return code_;
+        }
+    };
+
+    class Validator
+    {
+
+    public:
+        virtual bool validate(const std::vector<std::string> &input) = 0;
+    };
+
+    class ArgumentsCountValidator : public Validator
+    {
+    private:
+        uint count_;
+
+    public:
+        ArgumentsCountValidator(uint count) : count_(count) {}
+        bool validate(const std::vector<std::string> &input) override
+        {
+            if (!(input.size() >= count_))
+            {
+                throw ExecutionException(" Invalid number of arguments. Expected " + std::to_string(count_) + " got " + std::to_string(input.size()) + ".", "BAD_ARG_LEN");
+            }
+            return true;
+        }
+    };
+
     class Command
     {
     public:
@@ -226,7 +268,6 @@ namespace db
         std::string execute() override;
     };
 
-
     class SetPopCommand : public KeyedCommand
     {
     private:
@@ -353,7 +394,18 @@ namespace db
 
     class CommandFactory
     {
+    protected:
+        boost::shared_ptr<Validator> validator_;
+
     public:
+        CommandFactory(const boost::shared_ptr<Validator> &validator) : validator_(validator) {}
+        boost::shared_ptr<Command> get_command(const std::vector<std::string> &input)
+        {
+            validator_->validate(input);
+            return create_command(input);
+        }
+
+    private:
         virtual boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) = 0;
     };
 
@@ -361,313 +413,433 @@ namespace db
 
     class CreateStringCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        CreateStringCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class CreateSetCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        CreateSetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class CreateHashCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        CreateHashCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class CreateQueueCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        CreateQueueCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class CreateCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        CreateCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"STR", boost::make_shared<CreateStringCommandFactory>()},
-            {"SET", boost::make_shared<CreateSetCommandFactory>()},
-            {"HASH", boost::make_shared<CreateHashCommandFactory>()},
-            {"QUEUE", boost::make_shared<CreateQueueCommandFactory>()}};
+            {"STR", boost::make_shared<CreateStringCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"SET", boost::make_shared<CreateSetCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"HASH", boost::make_shared<CreateHashCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"QUEUE", boost::make_shared<CreateQueueCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))}};
     };
 
     // STRINGS
 
     class StringExistsCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringExistsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringGetCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringGetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringLenCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringSubCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringSubCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringAppendCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringAppendCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringPrependCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringPrependCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringInsertCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringInsertCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringTrimCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringTrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringLtrimCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringLtrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringRtrimCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        StringRtrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class StringCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        StringCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"EXISTS", boost::make_shared<StringExistsCommandFactory>()},
-            {"GET", boost::make_shared<StringGetCommandFactory>()},
-            {"LEN", boost::make_shared<StringLenCommandFactory>()},
-            {"SUB", boost::make_shared<StringSubCommandFactory>()},
-            {"APPEND", boost::make_shared<StringAppendCommandFactory>()},
-            {"PREPEND", boost::make_shared<StringPrependCommandFactory>()},
-            {"INSERT", boost::make_shared<StringInsertCommandFactory>()},
-            {"TRIM", boost::make_shared<StringTrimCommandFactory>()},
-            {"LTRIM", boost::make_shared<StringLtrimCommandFactory>()},
-            {"RTRIM", boost::make_shared<StringRtrimCommandFactory>()}};
+            {"EXISTS", boost::make_shared<StringExistsCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"GET", boost::make_shared<StringGetCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"LEN", boost::make_shared<StringLenCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"SUB", boost::make_shared<StringSubCommandFactory>(boost::make_shared<ArgumentsCountValidator>(3))},
+            {"APPEND", boost::make_shared<StringAppendCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"PREPEND", boost::make_shared<StringPrependCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"INSERT", boost::make_shared<StringInsertCommandFactory>(boost::make_shared<ArgumentsCountValidator>(3))},
+            {"TRIM", boost::make_shared<StringTrimCommandFactory>(boost::make_shared<ArgumentsCountValidator>(3))},
+            {"LTRIM", boost::make_shared<StringLtrimCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"RTRIM", boost::make_shared<StringRtrimCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))}};
     };
 
     // SETS
 
     class SetAddCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetAddCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetLenCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetIntersectionCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetIntersectionCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetDifferenceCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetDifferenceCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetUnionCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetUnionCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetContainsCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetContainsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetGetAllCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetGetAllCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetPopCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetPopCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class SetCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        SetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"ADD", boost::make_shared<SetAddCommandFactory>()},
-            {"LEN", boost::make_shared<SetLenCommandFactory>()},
-            {"INTER", boost::make_shared<SetIntersectionCommandFactory>()},
-            {"DIFF", boost::make_shared<SetDifferenceCommandFactory>()},
-            {"UNION", boost::make_shared<SetUnionCommandFactory>()},
-            {"CONTAINS", boost::make_shared<SetContainsCommandFactory>()},
-            {"GETALL", boost::make_shared<SetGetAllCommandFactory>()},
-            {"POP", boost::make_shared<SetPopCommandFactory>()}};
+            {"ADD", boost::make_shared<SetAddCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"LEN", boost::make_shared<SetLenCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"INTER", boost::make_shared<SetIntersectionCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"DIFF", boost::make_shared<SetDifferenceCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"UNION", boost::make_shared<SetUnionCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"CONTAINS", boost::make_shared<SetContainsCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"GETALL", boost::make_shared<SetGetAllCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"POP", boost::make_shared<SetPopCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))}};
     };
 
     // QUEUES
 
     class QueuePushCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        QueuePushCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class QueuePopCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        QueuePopCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class QueueCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        QueueCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"PUSH", boost::make_shared<QueuePushCommandFactory>()},
-            {"POP", boost::make_shared<QueuePopCommandFactory>()}};
+            {"PUSH", boost::make_shared<QueuePushCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"POP", boost::make_shared<QueuePopCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))}};
     };
 
     // HASHES
 
     class HashDelCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashDelCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashExistsCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashExistsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashGetCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashGetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashGetAllCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashGetAllCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashGetKeysCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashGetKeysCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashSetCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashSetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashLenCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashSearchCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
+
+    public:
+        HashSearchCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class HashCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        HashCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"DEL", boost::make_shared<HashDelCommandFactory>()},
-            {"EXISTS", boost::make_shared<HashExistsCommandFactory>()},
-            {"GET", boost::make_shared<HashGetCommandFactory>()},
-            {"GETALL", boost::make_shared<HashGetAllCommandFactory>()},
-            {"GETKEYS", boost::make_shared<HashGetKeysCommandFactory>()},
-            {"SET", boost::make_shared<HashSetCommandFactory>()},
-            {"LEN", boost::make_shared<HashLenCommandFactory>()},
-            {"SEARCH", boost::make_shared<HashSearchCommandFactory>()}};
+            {"DEL", boost::make_shared<HashDelCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"EXISTS", boost::make_shared<HashExistsCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"GET", boost::make_shared<HashGetCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"GETALL", boost::make_shared<HashGetAllCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"GETKEYS", boost::make_shared<HashGetKeysCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"SET", boost::make_shared<HashSetCommandFactory>(boost::make_shared<ArgumentsCountValidator>(3))},
+            {"LEN", boost::make_shared<HashLenCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"SEARCH", boost::make_shared<HashSearchCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))}};
     };
 
     // OTHER
 
     class DeleteCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        DeleteCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class KeysCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        KeysCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
     };
 
     class GenericCommandFactory : public CommandFactory
     {
-    public:
+    private:
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
+
+    public:
+        GenericCommandFactory(const boost::shared_ptr<Validator> &validator) : CommandFactory(validator) {}
         static CommandFactory &get_instance()
         {
-            static GenericCommandFactory instance;
+            static GenericCommandFactory instance{boost::make_shared<ArgumentsCountValidator>(1)};
             return instance;
         }
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
-            {"CREATE", boost::make_shared<CreateCommandFactory>()},
-            {"STR", boost::make_shared<StringCommandFactory>()},
-            {"SET", boost::make_shared<SetCommandFactory>()},
-            {"HASH", boost::make_shared<HashCommandFactory>()},
-            {"QUEUE", boost::make_shared<QueueCommandFactory>()},
-            {"DEL", boost::make_shared<DeleteCommandFactory>()},
-            {"KEYS", boost::make_shared<KeysCommandFactory>()}};
+            {"CREATE", boost::make_shared<CreateCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"STR", boost::make_shared<StringCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"SET", boost::make_shared<SetCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"HASH", boost::make_shared<HashCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"QUEUE", boost::make_shared<QueueCommandFactory>(boost::make_shared<ArgumentsCountValidator>(2))},
+            {"DEL", boost::make_shared<DeleteCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))},
+            {"KEYS", boost::make_shared<KeysCommandFactory>(boost::make_shared<ArgumentsCountValidator>(1))}};
     };
 }

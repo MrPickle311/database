@@ -77,13 +77,22 @@ namespace db
     boost::shared_ptr<Command> CreateCommandFactory::create_command(const std::vector<std::string> &input)
     {
         std::vector<std::string> new_command(input.begin() + 1, input.end());
-        return children_factories_[input[0]]->create_command(new_command);
+        if (!children_factories_.contains(input[0]))
+        {
+            throw ExecutionException("Unknown command: " + input[0], "CMD_UNKNOWN");
+        }
+        std::cout << "Creating command: " << input[0] << std::endl;
+        return children_factories_[input[0]]->get_command(new_command);
     }
 
     boost::shared_ptr<Command> GenericCommandFactory::create_command(const std::vector<std::string> &input)
     {
         std::vector<std::string> new_command(input.begin() + 1, input.end());
-        return children_factories_[input[0]]->create_command(new_command);
+        if (!children_factories_.contains(input[0]))
+        {
+            throw ExecutionException("Unknown command: " + input[0], "CMD_UNKNOWN");
+        }
+        return children_factories_[input[0]]->get_command(new_command);
     }
 
     // SETS
@@ -352,7 +361,11 @@ namespace db
         std::vector<std::string> new_command(input);
         auto it = new_command.begin() + 1;
         new_command.erase(it);
-        return children_factories_[input[1]]->create_command(new_command);
+        if (!children_factories_.contains(input[1]))
+        {
+            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+        }
+        return children_factories_[input[1]]->get_command(new_command);
     }
 
     // SETS FACTORIES
@@ -364,6 +377,7 @@ namespace db
 
     boost::shared_ptr<Command> SetAddCommandFactory::create_command(const std::vector<std::string> &input)
     {
+        std::cout << input[0] << " " << input[1] << std::endl;
         return boost::make_shared<SetAddCommand>(input[0], input[1]);
     }
 
@@ -405,9 +419,16 @@ namespace db
     boost::shared_ptr<Command> SetCommandFactory::create_command(const std::vector<std::string> &input)
     {
         std::vector<std::string> new_command(input);
+        for (auto&& input : new_command){
+            std::cout << input << std::endl;
+        }
         auto it = new_command.begin() + 1;
         new_command.erase(it);
-        return children_factories_[input[1]]->create_command(new_command);
+        if (!children_factories_.contains(input[1]))
+        {
+            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+        }
+        return children_factories_[input[1]]->get_command(new_command);
     }
 
     // QUEUES FACTORIES
@@ -422,7 +443,11 @@ namespace db
         std::vector<std::string> new_command(input);
         auto it = new_command.begin() + 1;
         new_command.erase(it);
-        return children_factories_[input[1]]->create_command(new_command);
+        if (!children_factories_.contains(input[1]))
+        {
+            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+        }
+        return children_factories_[input[1]]->get_command(new_command);
     }
 
     boost::shared_ptr<Command> QueuePushCommandFactory::create_command(const std::vector<std::string> &input)
@@ -447,7 +472,11 @@ namespace db
         std::vector<std::string> new_command(input);
         auto it = new_command.begin() + 1;
         new_command.erase(it);
-        return children_factories_[input[1]]->create_command(new_command);
+        if (!children_factories_.contains(input[1]))
+        {
+            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+        }
+        return children_factories_[input[1]]->get_command(new_command);
     }
 
     boost::shared_ptr<Command> HashDelCommandFactory::create_command(const std::vector<std::string> &input)

@@ -17,17 +17,10 @@ namespace db
         virtual std::vector<std::string> tokenize(const std::string &input) = 0;
     };
 
-    class Validator
-    {
-
-    public:
-        virtual bool validate(const std::string &input) = 0;
-    };
-
     class DefaultValidator : public Validator
     {
     public:
-        bool validate(const std::string &input) override;
+        bool validate(const std::vector<std::string> &input) override;
         static Validator &get_instance()
         {
             static DefaultValidator instance;

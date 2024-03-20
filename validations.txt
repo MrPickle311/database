@@ -1,9 +1,12 @@
 STR ABC TRIM 1 2, pierwszy argument < drugi argument
-łap boost::lexical_cast_exeption
-sprawdzaj na początku, czy komenda konczy się |
+sprawdzaj, czy trimowanie nie wykracza poza stringa
+
 sprawdzaj czy dana komend otrzymuje odpowiednią liczbę argumentów
-dany string,mapa,kolejka,set nie istnieje
-sprawdzaj czy dana komenda istnieje
-sprawdzaj, dany hash zawiera dany klucz
-sprawdzaj czy dana komenda ma odpowiedni format, czy jest przedzielona ; oraz czy subkomendy są napisami przedzielonymi białymi znakami
+
 przy intersekcach, uniach i diffach nazwy setów nie mogą sie powtarzac
+przy intersekcach, uniach i diffach wszystkie sety muszą istnieć
+
+
+sprawdzaj czy globalnie dany klucz istnieje, a potem sprawdzaj czy klucz należy do stringów, hashów, queues czy setóœ
+sprawdzaj, dany hash zawiera dany klucz
+dany string,mapa,kolejka,set nie istnieje

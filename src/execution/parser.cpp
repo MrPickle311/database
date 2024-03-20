@@ -16,6 +16,12 @@ namespace db
         return vec;
     }
 
+    bool is_all_whitespace(const std::string &str)
+    {
+        return std::all_of(str.begin(), str.end(), [](char c)
+                           { return std::isspace(c); });
+    }
+
     DefaultParser::DefaultParser(Validator &validator,
                                  Tokenizer &main_tokenizer,
                                  Tokenizer &sub_tokenizer,
@@ -28,7 +34,7 @@ namespace db
     {
         std::vector<boost::shared_ptr<Command>> result{};
 
-        if (!validator_.validate(input))
+        if (!validator_.validate(std::vector<std::string>{input}))
         {
             throw std::runtime_error("Cannot parse input");
         }
@@ -36,9 +42,13 @@ namespace db
 
         for (auto &&commandToken : commandTokens)
         {
-            auto subcommandTokens = this->sub_tokenizer_.tokenize(commandToken);
-            auto cmd = this->command_factory_.create_command(subcommandTokens);
-            result.push_back(cmd);
+            if (!is_all_whitespace(commandToken))
+            {
+                std::cout << "Command token " << commandToken << std::endl;
+                auto subcommandTokens = this->sub_tokenizer_.tokenize(commandToken);
+                auto cmd = this->command_factory_.get_command(subcommandTokens);
+                result.push_back(cmd);
+            }
         }
 
         return result;
@@ -48,7 +58,6 @@ namespace db
     {
         std::vector<std::string> tokens;
         boost::split(tokens, input, boost::is_any_of(this->delimeter));
-        // TODO: trzeba sprawidzic, czy big token nie sklada sie tylko z spacji
         return tokens;
     }
 
@@ -60,7 +69,7 @@ namespace db
         return tokens;
     }
 
-    bool DefaultValidator::validate(const std::string &input)
+    bool DefaultValidator::validate(const std::vector<std::string> &input)
     {
         return true;
     }
