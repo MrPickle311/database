@@ -22,11 +22,9 @@ namespace db
                            { return std::isspace(c); });
     }
 
-    DefaultParser::DefaultParser(Validator &validator,
-                                 Tokenizer &main_tokenizer,
+    DefaultParser::DefaultParser(Tokenizer &main_tokenizer,
                                  Tokenizer &sub_tokenizer,
-                                 CommandFactory &command_factory) : validator_(validator),
-                                                                    main_tokenizer_(main_tokenizer),
+                                 CommandFactory &command_factory) : main_tokenizer_(main_tokenizer),
                                                                     sub_tokenizer_(sub_tokenizer),
                                                                     command_factory_(command_factory) {}
 
@@ -34,10 +32,6 @@ namespace db
     {
         std::vector<boost::shared_ptr<Command>> result{};
 
-        if (!validator_.validate(std::vector<std::string>{input}))
-        {
-            throw std::runtime_error("Cannot parse input");
-        }
         auto commandTokens = this->main_tokenizer_.tokenize(input);
 
         for (auto &&commandToken : commandTokens)
@@ -69,8 +63,4 @@ namespace db
         return tokens;
     }
 
-    bool DefaultValidator::validate(const std::vector<std::string> &input)
-    {
-        return true;
-    }
 }

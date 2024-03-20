@@ -9,7 +9,6 @@ int main(int argc, char *argv[])
     try
     {
         db::DefaultParser p{
-            db::DefaultValidator::get_instance(),
             db::BigTokenizer::get_instance(),
             db::SmallTokenizer::get_instance(),
             db::GenericCommandFactory::get_instance()
