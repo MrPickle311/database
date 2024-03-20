@@ -251,12 +251,10 @@ namespace db
             throw DatabaseException("Cannot make difference between two objects with the same name", "INVALID_ARGUMENTS");
         }
         tbb::concurrent_hash_map<std::string, tbb::concurrent_set<std::string>>::accessor a, b;
-        std::cout << "difference " << std::endl;
         if (!data_.find(a, name_1) || !data_.find(b, name_2))
         {
             throw DatabaseException("One of key does not exist", "KEY_NOT_FOUND");
         }
-        std::cout << "difference END " << std::endl;
 
         std::set<std::string> difference;
         std::set_difference(a->second.begin(), a->second.end(),

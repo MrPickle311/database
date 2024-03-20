@@ -20,12 +20,10 @@ namespace db
 
     DefaultReadWithResponseConnection::~DefaultReadWithResponseConnection()
     {
-        std::cout << "Destroyed tcp_connection\n";
     }
 
     void DefaultReadWithResponseConnection::perform_connection()
     {
-        std::cout << "Performing connection \n";
         boost::asio::async_read_until(socket_, buffer_, boost::asio::string_view{"|"},
                                       boost::bind(&ReadWithResponseConnection::handle_read_finished,
                                                   shared_from_this(),
@@ -48,8 +46,6 @@ namespace db
                                                                  { return c != '|'; });
             trimmed_data = trimmed_data.substr(0, trimmed_data.size() - 1);
 
-            std::cout << "Received data[" << trimmed_data << "]" << std::endl;
-
             try
             {
                 std::vector<boost::shared_ptr<Command>> commands = this->execution_ioc_->getParser().extract_commands(trimmed_data);
@@ -61,7 +57,6 @@ namespace db
             }
             catch (const DatabaseException &e)
             {
-                std::cout << "Error executing command  " << e.get_message() << std::endl;
                 response = "[0][" + e.get_message() + "][" + e.get_code() + "]\n";
             }
             catch (const boost::bad_lexical_cast &e)
@@ -89,15 +84,6 @@ namespace db
 
     void DefaultReadWithResponseConnection::handle_write_finished(const boost::system::error_code ec, std::size_t bytes_transferred)
     {
-        if (!ec)
-        {
-            std::cout << "Wysłano dane: " << std::endl;
-        }
-        else
-        {
-            std::cerr << "Błąd wysyłania danych: " << ec.message() << std::endl;
-        }
-
         this->socket_.close();
     }
 
@@ -120,7 +106,6 @@ namespace db
 
     void DefaultTcpServer::accept()
     {
-        std::cout << "Do accept" << std::endl;
         boost::shared_ptr<Connection> connection = boost::make_shared<DefaultReadWithResponseConnection>(this->io_service_, this->execution_ioc_);
         acceptor_.async_accept(connection->get_socket(),
                                boost::bind(&DefaultTcpServer::handle_accept, this, connection, boost::asio::placeholders::error));
@@ -131,19 +116,16 @@ namespace db
 
         if (!ec)
         {
-            std::cout << "Connected with client " << conn->get_socket().remote_endpoint() << std::endl;
             conn->perform_connection();
         }
         else
         {
-            std::cout << "Accept error " << ec << std::endl;
             return;
         }
         accept();
     }
     void DefaultTcpServer::schedule(const boost::system::error_code &ec)
     {
-        std::cout << "Doing scheduled stuff" << std::endl;
         DataExporter::get_instance().save(config_.get_persistence_file());
         timer_.expires_from_now(boost::posix_time::seconds(10));
         timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));

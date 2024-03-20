@@ -38,7 +38,6 @@ namespace db
         {
             if (!is_all_whitespace(commandToken))
             {
-                std::cout << "Command token " << commandToken << std::endl;
                 auto subcommandTokens = this->sub_tokenizer_.tokenize(commandToken);
                 auto cmd = this->command_factory_.get_command(subcommandTokens);
                 result.push_back(cmd);
