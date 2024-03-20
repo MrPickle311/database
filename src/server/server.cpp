@@ -68,6 +68,10 @@ namespace db
             {
                 response = "[0][" + std::string{e.what()} + "][BAD_CAST]\n";
             }
+            catch (...)
+            {
+                response = "[0][Unknown error][UNKNOWN]\n";
+            }
 
             std::vector<char> data(response.length());
             std::copy(response.begin(), response.end(), data.begin());
@@ -97,13 +101,14 @@ namespace db
         this->socket_.close();
     }
 
-    DefaultTcpServer::DefaultTcpServer(const short port, boost::shared_ptr<DefaultExecutionIoC> execution_ioc)
-        : io_service_{10},
-          acceptor_(this->io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    DefaultTcpServer::DefaultTcpServer(const Config &config, boost::shared_ptr<DefaultExecutionIoC> execution_ioc)
+        : io_service_{config.get_thread_count()},
+          acceptor_(this->io_service_, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), config.get_port())),
           execution_ioc_{execution_ioc},
-          timer_{this->io_service_, boost::posix_time::seconds(10)}
+          timer_{this->io_service_, boost::posix_time::seconds(config.get_dump_period())},
+          config_{config}
     {
-        DataImporter::load("db_data");
+        DataImporter::load(config.get_persistence_file());
         accept();
         timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }
@@ -139,7 +144,7 @@ namespace db
     void DefaultTcpServer::schedule(const boost::system::error_code &ec)
     {
         std::cout << "Doing scheduled stuff" << std::endl;
-        DataExporter::get_instance().save("db_data");
+        DataExporter::get_instance().save(config_.get_persistence_file());
         timer_.expires_from_now(boost::posix_time::seconds(10));
         timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }

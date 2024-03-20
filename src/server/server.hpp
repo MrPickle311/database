@@ -60,7 +60,7 @@ namespace db
     class DefaultTcpServer : public TcpServer
     {
     public:
-        DefaultTcpServer(const short port, boost::shared_ptr<DefaultExecutionIoC> execution_ioc);
+        DefaultTcpServer(const Config& config , boost::shared_ptr<DefaultExecutionIoC> execution_ioc);
 
         void run();
 
@@ -75,5 +75,6 @@ namespace db
         boost::asio::streambuf buffer_;
         boost::shared_ptr<DefaultExecutionIoC> execution_ioc_;
         boost::asio::deadline_timer timer_;
+        Config config_;
     };
 }
