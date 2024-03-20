@@ -79,7 +79,7 @@ namespace db
         std::vector<std::string> new_command(input.begin() + 1, input.end());
         if (!children_factories_.contains(input[0]))
         {
-            throw ExecutionException("Unknown command: " + input[0], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[0], "CMD_UNKNOWN");
         }
         std::cout << "Creating command: " << input[0] << std::endl;
         return children_factories_[input[0]]->get_command(new_command);
@@ -90,7 +90,7 @@ namespace db
         std::vector<std::string> new_command(input.begin() + 1, input.end());
         if (!children_factories_.contains(input[0]))
         {
-            throw ExecutionException("Unknown command: " + input[0], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[0], "CMD_UNKNOWN");
         }
         return children_factories_[input[0]]->get_command(new_command);
     }
@@ -363,7 +363,7 @@ namespace db
         new_command.erase(it);
         if (!children_factories_.contains(input[1]))
         {
-            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[1], "CMD_UNKNOWN");
         }
         return children_factories_[input[1]]->get_command(new_command);
     }
@@ -426,7 +426,7 @@ namespace db
         new_command.erase(it);
         if (!children_factories_.contains(input[1]))
         {
-            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[1], "CMD_UNKNOWN");
         }
         return children_factories_[input[1]]->get_command(new_command);
     }
@@ -445,7 +445,7 @@ namespace db
         new_command.erase(it);
         if (!children_factories_.contains(input[1]))
         {
-            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[1], "CMD_UNKNOWN");
         }
         return children_factories_[input[1]]->get_command(new_command);
     }
@@ -474,7 +474,7 @@ namespace db
         new_command.erase(it);
         if (!children_factories_.contains(input[1]))
         {
-            throw ExecutionException("Unknown command: " + input[1], "CMD_UNKNOWN");
+            throw DatabaseException("Unknown command: " + input[1], "CMD_UNKNOWN");
         }
         return children_factories_[input[1]]->get_command(new_command);
     }

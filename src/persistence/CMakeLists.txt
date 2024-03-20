@@ -12,6 +12,7 @@ set_target_properties(persistence PROPERTIES CXX_STANDARD 20)
 target_include_directories(
   persistence
   PUBLIC .
+  ../utils
 )
 
 target_link_libraries(persistence Boost::system TBB::tbb)

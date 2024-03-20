@@ -5,26 +5,10 @@
 #include <map>
 #include <boost/make_shared.hpp>
 #include <optional>
+#include <utils.hpp>
 
 namespace db
 {
-    class ExecutionException : public std::exception
-    {
-    private:
-        std::string message_;
-        std::string code_;
-
-    public:
-        ExecutionException(const std::string &message, const std::string &code) : message_(message), code_(code) {}
-        std::string get_message() const
-        {
-            return message_;
-        }
-        std::string get_code() const
-        {
-            return code_;
-        }
-    };
 
     class Validator
     {
@@ -44,7 +28,7 @@ namespace db
         {
             if (!(input.size() >= count_))
             {
-                throw ExecutionException(" Invalid number of arguments. Expected " + std::to_string(count_) + " got " + std::to_string(input.size()) + ".", "BAD_ARG_LEN");
+                throw DatabaseException(" Invalid number of arguments. Expected " + std::to_string(count_) + " got " + std::to_string(input.size()) + ".", "BAD_ARG_LEN");
             }
             return true;
         }

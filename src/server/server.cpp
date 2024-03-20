@@ -59,7 +59,7 @@ namespace db
                 }
                 response = "[1][" + response + "]" + "[]\n";
             }
-            catch (const ExecutionException &e)
+            catch (const DatabaseException &e)
             {
                 std::cout << "Error executing command  " << e.get_message() << std::endl;
                 response = "[0][" + e.get_message() + "][" + e.get_code() + "]\n";
