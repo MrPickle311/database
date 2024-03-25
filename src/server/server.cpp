@@ -25,7 +25,7 @@ namespace db
     void DefaultReadWithResponseConnection::perform_connection()
     {
         boost::asio::async_read_until(socket_, buffer_, boost::asio::string_view{"|"},
-                                      boost::bind(&ReadWithResponseConnection::handle_read_finished,
+                                      boost::bind(&DefaultReadWithResponseConnection::handle_read_finished,
                                                   shared_from_this(),
                                                   boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
     }
@@ -72,7 +72,7 @@ namespace db
             std::copy(response.begin(), response.end(), data.begin());
 
             boost::asio::async_write(socket_, boost::asio::buffer(data),
-                                     boost::bind(&ReadWithResponseConnection::handle_write_finished,
+                                     boost::bind(&DefaultReadWithResponseConnection::handle_write_finished,
                                                  shared_from_this(),
                                                  boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
         }
@@ -126,7 +126,7 @@ namespace db
     }
     void DefaultTcpServer::schedule(const boost::system::error_code &ec)
     {
-        DataExporter::get_instance().save(config_.get_persistence_file());
+        DataExporter::save(config_.get_persistence_file());
         timer_.expires_from_now(boost::posix_time::seconds(10));
         timer_.async_wait(boost::bind(&DefaultTcpServer::schedule, this, boost::asio::placeholders::error));
     }

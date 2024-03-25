@@ -54,12 +54,24 @@ namespace db
         return tokens;
     }
 
+    Tokenizer &BigTokenizer::get_instance()
+    {
+        static BigTokenizer tokenizer;
+        return tokenizer;
+    }
+
     std::vector<std::string> SmallTokenizer::tokenize(const std::string &input)
     {
         std::vector<std::string> tokens;
         boost::split(tokens, input, boost::is_any_of(this->delimeter));
         tokens = cleanup(tokens, " ");
         return tokens;
+    }
+
+    Tokenizer &SmallTokenizer::get_instance()
+    {
+        static SmallTokenizer instance;
+        return instance;
     }
 
 }

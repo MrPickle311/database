@@ -526,4 +526,15 @@ namespace db
         return boost::make_shared<KeysCommand>(input.size() > 0 ? std::optional<std::string>{input[0]} : std::optional<std::string>{});
     }
 
+    bool ArgumentsCountValidator::validate(const std::vector<std::string> &input)
+    {
+        if (input.size() < count_)
+        {
+            std::string message = "Invalid number of arguments. Expected " + std::to_string(count_) +
+                                  " got " + std::to_string(input.size()) + ".";
+            throw DatabaseException(message, "BAD_ARG_LEN");
+        }
+        return true;
+    }
+
 }
