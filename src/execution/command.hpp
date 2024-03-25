@@ -44,7 +44,7 @@ namespace db
          *
          * \param count The expected number of arguments.
          */
-        ArgumentsCountValidator(uint count) : count_(count) {}
+        ArgumentsCountValidator(uint count);
 
         /**
          * Implementation of the `validate` method inherited from the Validator interface.
@@ -93,7 +93,7 @@ namespace db
         std::string key_name_;
 
     public:
-        KeyedCommand(const std::string &str_name) : key_name_(str_name) {}
+        KeyedCommand(const std::string &str_name);
     };
 
     // CREATE
@@ -104,7 +104,7 @@ namespace db
         std::string value_;
 
     public:
-        CreateStringCommand(const std::string &string_name, const std::string &value) : KeyedCommand{string_name}, value_{value} {}
+        CreateStringCommand(const std::string &string_name, const std::string &value);
         std::string execute();
     };
 
@@ -112,20 +112,20 @@ namespace db
     {
     public:
         std::string execute();
-        CreateSetCommand(const std::string &set_name) : KeyedCommand{set_name} {}
+        CreateSetCommand(const std::string &set_name);
     };
 
     class CreateHashCommand : public KeyedCommand
     {
     public:
         std::string execute();
-        CreateHashCommand(const std::string &hash_name) : KeyedCommand{hash_name} {}
+        CreateHashCommand(const std::string &hash_name);
     };
 
     class CreateQueueCommand : public KeyedCommand
     {
     public:
-        CreateQueueCommand(const std::string &queue_name) : KeyedCommand{queue_name} {}
+        CreateQueueCommand(const std::string &queue_name);
         std::string execute();
     };
 
@@ -134,21 +134,21 @@ namespace db
     class StringGetCommand : public KeyedCommand
     {
     public:
-        StringGetCommand(const std::string &str_name) : KeyedCommand(str_name) {}
+        StringGetCommand(const std::string &str_name);
         std::string execute() override;
     };
 
     class StringExistsCommand : public KeyedCommand
     {
     public:
-        StringExistsCommand(const std::string &str_name) : KeyedCommand(str_name) {}
+        StringExistsCommand(const std::string &str_name);
         std::string execute() override;
     };
 
     class StringLenCommand : public KeyedCommand
     {
     public:
-        StringLenCommand(const std::string &str_name) : KeyedCommand(str_name) {}
+        StringLenCommand(const std::string &str_name);
         std::string execute() override;
     };
 
@@ -159,8 +159,7 @@ namespace db
         uint end_pos_;
 
     public:
-        StringSubCommand(const std::string &str_name, uint start_pos, uint end_pos)
-            : KeyedCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
+        StringSubCommand(const std::string &str_name, uint start_pos, uint end_pos);
         std::string execute() override;
     };
 
@@ -170,8 +169,7 @@ namespace db
         std::string value_;
 
     public:
-        StringAppendCommand(const std::string &str_name, const std::string &value)
-            : KeyedCommand(str_name), value_(value) {}
+        StringAppendCommand(const std::string &str_name, const std::string &value);
         std::string execute() override;
     };
 
@@ -181,8 +179,7 @@ namespace db
         std::string value_;
 
     public:
-        StringPrependCommand(const std::string &str_name, const std::string &value)
-            : KeyedCommand(str_name), value_(value) {}
+        StringPrependCommand(const std::string &str_name, const std::string &value);
         std::string execute() override;
     };
 
@@ -193,8 +190,7 @@ namespace db
         std::string value_;
 
     public:
-        StringInsertCommand(const std::string &str_name, uint pos, const std::string &value)
-            : KeyedCommand(str_name), pos_(pos), value_(value) {}
+        StringInsertCommand(const std::string &str_name, uint pos, const std::string &value);
         std::string execute() override;
     };
 
@@ -205,8 +201,7 @@ namespace db
         uint end_pos_;
 
     public:
-        StringTrimCommand(const std::string &str_name, uint start_pos, uint end_pos)
-            : KeyedCommand(str_name), start_pos_(start_pos), end_pos_(end_pos) {}
+        StringTrimCommand(const std::string &str_name, uint start_pos, uint end_pos);
         std::string execute() override;
     };
 
@@ -216,8 +211,7 @@ namespace db
         uint char_count_;
 
     public:
-        StringLtrimCommand(const std::string &str_name, uint char_count)
-            : KeyedCommand(str_name), char_count_(char_count) {}
+        StringLtrimCommand(const std::string &str_name, uint char_count);
         std::string execute() override;
     };
 
@@ -227,8 +221,7 @@ namespace db
         uint char_count_;
 
     public:
-        StringRtrimCommand(const std::string &str_name, uint char_count)
-            : KeyedCommand(str_name), char_count_(char_count) {}
+        StringRtrimCommand(const std::string &str_name, uint char_count);
         std::string execute() override;
     };
 
@@ -240,14 +233,14 @@ namespace db
         std::string value_;
 
     public:
-        SetAddCommand(const std::string &set_name, const std::string &value) : KeyedCommand(set_name), value_(value) {}
+        SetAddCommand(const std::string &set_name, const std::string &value);
         std::string execute() override;
     };
 
     class SetLenCommand : public KeyedCommand
     {
     public:
-        SetLenCommand(const std::string &set_name) : KeyedCommand(set_name) {}
+        SetLenCommand(const std::string &set_name);
         std::string execute() override;
     };
 
@@ -257,7 +250,7 @@ namespace db
         std::vector<std::string> set_names_;
 
     public:
-        SetIntersectionCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        SetIntersectionCommand(const std::vector<std::string> &set_names);
         std::string execute() override;
     };
 
@@ -268,7 +261,7 @@ namespace db
         std::string set_name_2_;
 
     public:
-        SetDifferenceCommand(const std::string &set_name_1, const std::string &set_name_2) : set_name_1_(set_name_1), set_name_2_(set_name_2) {}
+        SetDifferenceCommand(const std::string &set_name_1, const std::string &set_name_2);
         std::string execute() override;
     };
 
@@ -278,7 +271,7 @@ namespace db
         std::vector<std::string> set_names_;
 
     public:
-        SetUnionCommand(const std::vector<std::string> &set_names) : set_names_(set_names) {}
+        SetUnionCommand(const std::vector<std::string> &set_names);
         std::string execute() override;
     };
 
@@ -288,14 +281,14 @@ namespace db
         std::string value_;
 
     public:
-        SetContainsCommand(const std::string &set_name, const std::string &value) : KeyedCommand(set_name), value_(value) {}
+        SetContainsCommand(const std::string &set_name, const std::string &value);
         std::string execute() override;
     };
 
     class SetGetAllCommand : public KeyedCommand
     {
     public:
-        SetGetAllCommand(const std::string &set_name) : KeyedCommand(set_name) {}
+        SetGetAllCommand(const std::string &set_name);
         std::string execute() override;
     };
 
@@ -305,7 +298,7 @@ namespace db
         std::string value_;
 
     public:
-        SetPopCommand(const std::string &set_name, const std::string value) : KeyedCommand(set_name), value_(value) {}
+        SetPopCommand(const std::string &set_name, const std::string value);
         std::string execute() override;
     };
 
@@ -317,14 +310,14 @@ namespace db
         std::string value_;
 
     public:
-        QueuePushCommand(const std::string &queue_name, const std::string &value) : KeyedCommand(queue_name), value_(value) {}
+        QueuePushCommand(const std::string &queue_name, const std::string &value);
         std::string execute() override;
     };
 
     class QueuePopCommand : public KeyedCommand
     {
     public:
-        QueuePopCommand(const std::string &queue_name) : KeyedCommand(queue_name) {}
+        QueuePopCommand(const std::string &queue_name);
         std::string execute() override;
     };
 
@@ -336,7 +329,7 @@ namespace db
         std::string hash_key_;
 
     public:
-        HashDelCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        HashDelCommand(const std::string &hash_name, const std::string &hash_key);
         std::string execute() override;
     };
 
@@ -346,7 +339,7 @@ namespace db
         std::string hash_key_;
 
     public:
-        HashExistsCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        HashExistsCommand(const std::string &hash_name, const std::string &hash_key);
         std::string execute() override;
     };
 
@@ -356,21 +349,21 @@ namespace db
         std::string hash_key_;
 
     public:
-        HashGetCommand(const std::string &hash_name, const std::string &hash_key) : KeyedCommand(hash_name), hash_key_(hash_key) {}
+        HashGetCommand(const std::string &hash_name, const std::string &hash_key);
         std::string execute() override;
     };
 
     class HashGetAllCommand : public KeyedCommand
     {
     public:
-        HashGetAllCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        HashGetAllCommand(const std::string &hash_name);
         std::string execute() override;
     };
 
     class HashKeysCommand : public KeyedCommand
     {
     public:
-        HashKeysCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        HashKeysCommand(const std::string &hash_name);
         std::string execute() override;
     };
 
@@ -381,14 +374,14 @@ namespace db
         std::string hash_value_;
 
     public:
-        HashSetCommand(const std::string &hash_name, const std::string &hash_key, const std::string &hash_value) : KeyedCommand(hash_name), hash_key_(hash_key), hash_value_(hash_value) {}
+        HashSetCommand(const std::string &hash_name, const std::string &hash_key, const std::string &hash_value);
         std::string execute() override;
     };
 
     class HashLenCommand : public KeyedCommand
     {
     public:
-        HashLenCommand(const std::string &hash_name) : KeyedCommand(hash_name) {}
+        HashLenCommand(const std::string &hash_name);
         std::string execute() override;
     };
 
@@ -398,7 +391,7 @@ namespace db
         std::string query_;
 
     public:
-        HashSearchCommand(const std::string &hash_name, const std::string &query) : KeyedCommand(hash_name), query_(query) {}
+        HashSearchCommand(const std::string &hash_name, const std::string &query);
         std::string execute() override;
     };
 
@@ -410,14 +403,14 @@ namespace db
         std::optional<std::string> pattern_;
 
     public:
-        KeysCommand(const std::optional<std::string> pattern) : pattern_(pattern) {}
+        KeysCommand(const std::optional<std::string> pattern);
         std::string execute() override;
     };
 
     class DelCommand : public KeyedCommand
     {
     public:
-        DelCommand(const std::string &key) : KeyedCommand(key) {}
+        DelCommand(const std::string &key);
         std::string execute() override;
     };
 
@@ -435,7 +428,7 @@ namespace db
         boost::shared_ptr<Validator> validator_;
 
     public:
-        CommandFactory(const boost::shared_ptr<Validator> &validator) : validator_(validator) {}
+        CommandFactory(const boost::shared_ptr<Validator> &validator);
 
         /**
          * @brief Creates and returns a Command object based on the input data.
@@ -446,11 +439,7 @@ namespace db
          * @param input The input data to be used for command creation.
          * @return A shared pointer to the created Command object.
          */
-        boost::shared_ptr<Command> get_command(const std::vector<std::string> &input)
-        {
-            validator_->validate(input);
-            return create_command(input);
-        }
+        boost::shared_ptr<Command> get_command(const std::vector<std::string> &input);
 
     private:
         /**
@@ -472,7 +461,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        CreateStringCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        CreateStringCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class CreateSetCommandFactory : public CommandFactory
@@ -481,7 +470,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        CreateSetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        CreateSetCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class CreateHashCommandFactory : public CommandFactory
@@ -490,7 +479,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        CreateHashCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        CreateHashCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class CreateQueueCommandFactory : public CommandFactory
@@ -499,7 +488,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        CreateQueueCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        CreateQueueCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -523,7 +512,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        CreateCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        CreateCommandFactory(const boost::shared_ptr<Validator> validator);
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
@@ -541,7 +530,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringExistsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringExistsCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringGetCommandFactory : public CommandFactory
@@ -550,7 +539,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringGetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringGetCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringLenCommandFactory : public CommandFactory
@@ -559,7 +548,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringLenCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringSubCommandFactory : public CommandFactory
@@ -568,7 +557,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringSubCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringSubCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringAppendCommandFactory : public CommandFactory
@@ -577,7 +566,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringAppendCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringAppendCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringPrependCommandFactory : public CommandFactory
@@ -586,7 +575,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringPrependCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringPrependCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringInsertCommandFactory : public CommandFactory
@@ -595,7 +584,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringInsertCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringInsertCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringTrimCommandFactory : public CommandFactory
@@ -604,7 +593,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringTrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringTrimCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringLtrimCommandFactory : public CommandFactory
@@ -613,7 +602,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringLtrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringLtrimCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class StringRtrimCommandFactory : public CommandFactory
@@ -622,7 +611,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        StringRtrimCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringRtrimCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -647,7 +636,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        StringCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        StringCommandFactory(const boost::shared_ptr<Validator> validator);
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
@@ -671,7 +660,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetAddCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetAddCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetLenCommandFactory : public CommandFactory
@@ -680,7 +669,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetLenCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetIntersectionCommandFactory : public CommandFactory
@@ -689,7 +678,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetIntersectionCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetIntersectionCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetDifferenceCommandFactory : public CommandFactory
@@ -698,7 +687,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetDifferenceCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetDifferenceCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetUnionCommandFactory : public CommandFactory
@@ -707,7 +696,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetUnionCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetUnionCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetContainsCommandFactory : public CommandFactory
@@ -716,7 +705,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetContainsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetContainsCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetGetAllCommandFactory : public CommandFactory
@@ -725,7 +714,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetGetAllCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetGetAllCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class SetPopCommandFactory : public CommandFactory
@@ -734,7 +723,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetPopCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetPopCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -758,7 +747,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        SetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        SetCommandFactory(const boost::shared_ptr<Validator> validator);
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
@@ -780,7 +769,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        QueuePushCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        QueuePushCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class QueuePopCommandFactory : public CommandFactory
@@ -789,7 +778,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        QueuePopCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        QueuePopCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -813,7 +802,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        QueueCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        QueueCommandFactory(const boost::shared_ptr<Validator> validator);
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
@@ -829,7 +818,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashDelCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashDelCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashExistsCommandFactory : public CommandFactory
@@ -838,7 +827,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashExistsCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashExistsCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashGetCommandFactory : public CommandFactory
@@ -847,7 +836,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashGetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashGetCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashGetAllCommandFactory : public CommandFactory
@@ -856,7 +845,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashGetAllCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashGetAllCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashGetKeysCommandFactory : public CommandFactory
@@ -865,7 +854,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashGetKeysCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashGetKeysCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashSetCommandFactory : public CommandFactory
@@ -874,7 +863,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashSetCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashSetCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashLenCommandFactory : public CommandFactory
@@ -883,7 +872,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashLenCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashLenCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class HashSearchCommandFactory : public CommandFactory
@@ -892,7 +881,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input) override;
 
     public:
-        HashSearchCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashSearchCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -916,7 +905,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        HashCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        HashCommandFactory(const boost::shared_ptr<Validator> validator);
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
@@ -938,7 +927,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        DeleteCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        DeleteCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     class KeysCommandFactory : public CommandFactory
@@ -947,7 +936,7 @@ namespace db
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
     public:
-        KeysCommandFactory(const boost::shared_ptr<Validator> validator) : CommandFactory(validator) {}
+        KeysCommandFactory(const boost::shared_ptr<Validator> validator);
     };
 
     /**
@@ -970,14 +959,10 @@ namespace db
          */
         boost::shared_ptr<Command> create_command(const std::vector<std::string> &input);
 
-        GenericCommandFactory(const boost::shared_ptr<Validator> &validator) : CommandFactory(validator) {}
+        GenericCommandFactory(const boost::shared_ptr<Validator> &validator);
 
     public:
-        static CommandFactory &get_instance()
-        {
-            static GenericCommandFactory instance{boost::make_shared<ArgumentsCountValidator>(1)};
-            return instance;
-        }
+        static CommandFactory &get_instance();
 
     private:
         std::map<std::string, boost::shared_ptr<CommandFactory>> children_factories_{
